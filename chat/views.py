@@ -39,7 +39,7 @@ from .models import (
     WPlaceState,
 )
 
-# Usuario = get_user_model()
+Usuario = get_user_model()
 
 waiting_users = []  
 active_rooms = {}
