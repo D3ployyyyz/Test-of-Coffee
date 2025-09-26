@@ -1,0 +1,7 @@
+<h2>Criar Evento para {{ clube.nome }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Criar Evento</button>
+</form>

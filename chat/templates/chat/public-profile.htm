@@ -1,0 +1,329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>TANOTO — Perfil Aconchegante</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Indie+Flower&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'chat/style.css' %}">
+
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      background: #fefcf8;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .lofi-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 180px;
+      height: 100vh;
+      background: rgba(140, 115, 165, 0.2); /* roxo suave translúcido */
+      backdrop-filter: blur(4px); /* opcional: vidro fosco */
+      border-right: 2px solid #e2cfc3;
+      padding-top: 4rem;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      z-index: 99;
+
+      /* Para animação de esconder */
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+    }
+    .lofi-sidebar.hidden {
+      transform: translateX(-180px);
+    }
+
+    /* Botão bookmark que puxa a sidebar */
+    #toggle-sidebar {
+      position: fixed;
+      top: 15px;
+      left: 180px; /* inicial à direita da sidebar */
+      width: 40px;
+      height: 40px;
+      background: #f5e8db;
+      border: 2px solid #e2cfc3;
+      border-radius: 6px 0 0 6px;
+      cursor: pointer;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: left 0.3s ease, background 0.3s ease;
+      user-select: none;
+    }
+    /* Ícone bookmark simples */
+    #toggle-sidebar::before {
+      content: "🔖";
+      font-size: 22px;
+      line-height: 1;
+    }
+    /* Quando sidebar estiver escondida, botão pula para a esquerda da tela */
+    .lofi-sidebar.hidden + #toggle-sidebar {
+      left: 0;
+      border-radius: 0 6px 6px 0;
+      background: #fefcf8;
+    }
+
+    /* Lista da sidebar */
+    .lofi-sidebar nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      align-items: flex-start;
+      padding-left: 1rem;
+    }
+
+    .lofi-sidebar nav ul li a {
+      display: flex;
+      align-items: flex-start; /* alinha o conteúdo ao topo */
+      gap: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: background 0.2s ease, transform 0.2s ease;
+      color: #6b4f3f;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .lofi-sidebar nav ul li a img {
+      width: 20px;
+      height: 20px;
+      filter: sepia(40%) brightness(90%);
+      /* mantém o ícone alinhado no topo */
+    }
+
+    .lofi-sidebar nav ul li a span {
+      display: inline-block;
+      margin-top: 3px; /* desloca o texto um pouco pra baixo */
+    }
+
+    .lofi-sidebar nav ul li a:hover {
+      background: rgba(149, 115, 179, 0.15); /* lavanda bem suave */
+      transform: translateX(4px);
+    }
+
+    .profile-right-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem; /* espaçamento entre elementos */
+    }
+
+    .edit-button {
+      margin-left: 210px;
+      background: #ffe8cc;
+      color: #5d4037;
+      font-size: .8rem;
+      padding: 0.1rem 1.3rem;
+      border: 2px solid #e6c8ac;
+      border-radius: 16px;
+      text-decoration: none;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .edit-button:hover {
+      background: #ffdbb0;
+      transform: translateY(-2px);
+      box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <aside class="lofi-sidebar" id="sidebar">
+    <nav>
+      <ul>
+        <div>TANOTO</div>
+        <li><a href="#"><img src="https://cdn-icons-png.flaticon.com/128/1946/1946488.png" alt=""> <span>Home</span></a></li>
+        <li><a href="{% url 'chat:profile' %}"><img src="https://cdn-icons-png.flaticon.com/128/747/747376.png" alt=""> <span>Perfil</span></a></li>
+        <li><a href="{% url 'chat:home' %}"><img src="https://cdn-icons-png.flaticon.com/128/2589/2589175.png" alt=""> <span>Chat</span></a></li>
+        <li><a href="{% url 'chat:clubes' %}"><img src="https://cdn-icons-png.flaticon.com/128/1042/1042333.png" alt=""> <span>Salas</span></a></li>
+        <li><a href="#"><img src="https://cdn-icons-png.flaticon.com/128/54/54481.png" alt=""> <span>Explorar</span></a></li>
+        <li><a href="#"><img src="https://cdn-icons-png.flaticon.com/128/857/857681.png" alt=""> <span>Inventário</span></a></li>
+      </ul>      
+    </nav>
+  </aside>
+
+  <button style="margin-top: 60px;" id="toggle-sidebar" aria-label="Toggle sidebar"></button>
+
+  <!-- GIFs decorativos lo-fi -->
+  <div class="ambient-gifs">
+    <img src="https://media.tenor.com/ipuTozw3PXsAAAAj/pixel-cat.gif" class="ambient-gif cat" alt="gatinho pixel">
+    <img src="https://i.pinimg.com/originals/1a/56/ea/1a56eaaaf78869d7c6e0e620b2b98394.gif" class="ambient-gif coffee" alt="café quentinho">
+    <img src="https://img1.picmix.com/output/stamp/thumb/8/6/4/7/1007468_b04a4.gif" class="ambient-gif leaves" alt="folhas caindo">
+  </div>  
+
+  <div class="container">
+
+    <!-- PERFIL -->
+    <div id="profile">
+      <div class="left-profile">
+        <img class="pic" src="https://media.tenor.com/ipuTozw3PXsAAAAj/pixel-cat.gif" alt="Foto de perfil" />
+        <div class="badges">
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="header-info">
+          <div class="emotion">😊</div>
+          <div class="name">coelho</div>
+          <div class="meta">Desde 27/06/2025</div>
+          <div class="meta">☕ 10 cafés</div>
+        </div>
+        <div class="description">I like carrots</div>
+        <div class="location">Sorocaba - SP</div>
+        <div class="likes">
+          <span class="like-item">cenouras</span>
+          <span class="like-item">pixel art</span>
+        </div>
+        <div class="socials">
+          <!-- redes sociais inseridas via JS -->
+        </div>
+      </div>
+
+      <div class="profile-right-column">
+        <div class="playlist-cover">
+          <!-- disco e capa da playlist -->
+          <div class="vinyl-disc">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-label">
+              <img src="https://upload.wikimedia.org/wikipedia/pt/5/53/Gorillaz_-_Gorillaz_-_2001.jpg" alt="Label"/>
+            </div>
+          </div>
+          <div id="playlist-image-container">
+            <!-- JS insere capa e iframe -->
+          </div>
+
+         </div>
+         
+         <!-- BOTÃO ABAIXO -->
+        <a href="edit.html" class="edit-button">Editar Perfil</a>
+       
+      </div>
+
+    </div>
+
+
+    <!-- MURAL & LISTAS -->
+    <div class="below-profile">
+      <div id="mural">
+        <form id="form-recado" autocomplete="off">
+          <input type="text" id="autor" placeholder="Seu nome" required maxlength="20" />
+          <textarea id="texto" placeholder="Escreva seu recado" required maxlength="150"></textarea>
+          <input type="text" id="reacoes" placeholder="Reações (ex: 💖 😌 ☕)" maxlength="20" />
+          <button type="submit">Adicionar</button>
+        </form>
+
+        <article class="recado" style="left: 10px; top: 90px;">
+          <div class="autor">
+            <img class="avatar" src="https://i.pravatar.cc/44?img=12" alt="avatar lofi_mate" />
+            <strong>lofi_mate</strong>
+          </div>
+          <p class="texto">Adorei conversar contigo ontem, sua vibe é muito tranquila 🌙</p>
+          <div class="footer">
+            <span class="data">26/06</span>
+            <span class="reacoes">💖😌☕</span>
+          </div>
+        </article>
+        <article class="recado" style="left: 140px; top: 60px;">
+          <div class="autor">
+            <img class="avatar" src="https://i.pravatar.cc/44?img=8" alt="avatar poetadatristeza" />
+            <strong>poetadatristeza</strong>
+          </div>
+          <p class="texto">Espero te ver hoje no Café das Madrugadas ☕</p>
+          <div class="footer">
+            <span class="data">25/06</span>
+            <span class="reacoes">🍂💌</span>
+          </div>
+        </article>
+        <article class="recado" style="left: 270px; top: 100px;">
+          <div class="autor">
+            <img class="avatar" src="https://i.pravatar.cc/44?img=3" alt="avatar pixelfan" />
+            <strong>pixelfan</strong>
+          </div>
+          <p class="texto">Que seus pixels sejam sempre perfeitos e coloridos! 🎨✨</p>
+          <div class="footer">
+            <span class="data">24/06</span>
+            <span class="reacoes">🎮💾💡</span>
+          </div>
+        </article>
+      </div>
+
+      <div id="lists">
+        <div class="list">
+          <h3>Amigos</h3>
+          <div class="list-items">
+            <div class="list-item">
+              <img class="friend-avatar" src="https://i.pravatar.cc/60?img=1"/>
+              <div class="tooltip">Gato404<br>Amante de pixel art e café ☕</div>
+              <div>Gato404</div>
+            </div>
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=2" />
+              <div>BunnyMix</div>
+            </div>
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=3" />
+              <div>Foxy</div>
+            </div>
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=4" />
+              <div>Tartaruga</div>
+            </div>
+            <!-- ... repita outros amigos ... -->
+          </div>
+        </div>
+
+        <div class="list">
+          <h3>Clubes</h3>
+          <div class="list-items">
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=5" />
+              <div>Retro Gamers</div>
+            </div>
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=6" />
+              <div>Lo-fi Fans</div>
+            </div>
+            <div class="list-item">
+              <img src="https://i.pravatar.cc/60?img=7" />
+              <div>VHS Club</div>
+            </div>
+            <!-- ... repita outros clubes ... -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+    });
+  </script>
+
+  <script src="{% static 'chat/profile.js' %}"></script>
+</body>
+</html>

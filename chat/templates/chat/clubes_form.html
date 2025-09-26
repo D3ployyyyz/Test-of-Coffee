@@ -1,0 +1,9 @@
+{% block content %}
+<h1>{{ acao }} Clube</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">{{ acao }}</button>
+</form>
+<a href="{% url 'chat:clubes_lista' %}">Cancelar</a>
+{% endblock %}

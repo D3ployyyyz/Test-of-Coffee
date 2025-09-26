@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Clube</title>
+  <style>
+    body {
+      background: #f9f9fc;
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 1300px;
+      color: #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    /* COLUNA ESQUERDA */
+    .main-content {
+      flex: 1 1 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    h1 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .club-container {
+      display: flex;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .club-image-box {
+      flex: 0 0 280px;
+      background: #eee;
+      padding: 20px;
+      text-align: center;
+    }
+    .club-image-box img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .members-count {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    .club-info-box {
+      flex: 1;
+      padding: 20px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 20px;
+      margin-bottom: 20px;
+    }
+    .info-item {
+      font-size: 14px;
+      color: #333;
+    }
+    .info-item strong {
+      display: block;
+      color: #666;
+      font-weight: normal;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    .club-description {
+      background: #f3f3f3;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .mural {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+    }
+    .mural h2 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      color: #444;
+    }
+    .mural-post {
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .mural-post:first-child { border-top: none; }
+    .mural-post strong { color: #333; }
+    .mural-post small {
+      display: block;
+      color: #999;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    /* BARRA LATERAL */
+    .sidebar {
+      flex: 0 0 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .forum-block {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .forum-block h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .forum-topic {
+      margin-bottom: 12px;
+    }
+    .forum-topic strong {
+      display: block;
+      color: #222;
+      margin-bottom: 2px;
+    }
+    .forum-topic small { color: #999; }
+    .chat-message {
+      padding: 6px 0;
+      border-top: 1px solid #eee;
+    }
+    .chat-message:first-child { border-top: none; }
+    .chat-message span {
+      font-weight: bold;
+      color: #444;
+    }
+    .chat-message small {
+      color: #aaa;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    @media (max-width: 1150px) {
+      body { flex-direction: column; }
+      .sidebar { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-content">
+    <div class="club-container">
+      <div class="club-image-box">
+        <img id="clubImg" src="" alt="">
+        <div class="members-count" id="clubMembers"></div>
+      </div>
+      <div class="club-info-box">
+        <h1 id="clubName"></h1>
+        <div class="info-grid" id="infoGrid"></div>
+        <div class="club-description" id="clubDesc"></div>
+      </div>
+    </div>
+
+    <div class="mural" id="mural">
+      <h2>Mural de Recados</h2>
+      <!-- posts inseridos via JS -->
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="forum-block" id="forumDisc">
+      <h3>🧵 Discussões</h3>
+      <!-- tópicos via JS -->
+    </div>
+    <div class="forum-block" id="forumChat">
+      <h3>💬 Bate-Papo</h3>
+      <!-- chat via JS -->
+    </div>
+  </div>
+
+  <script>
+    // --- Helpers ---
+    function getSlug() {
+      return new URLSearchParams(location.search).get('slug');
+    }
+    function renderList(container, items, renderItem) {
+      items.forEach(i => container.appendChild(renderItem(i)));
+    }
+
+    // --- Dados & renderização ---
+    const slug = getSlug();
+    const clubes  = JSON.parse(localStorage.getItem('clubes')) || [];
+    const clube   = clubes.find(c => c.slug === slug);
+
+    if (!clube) {
+      document.body.innerHTML = '<p>Clube não encontrado.</p>';
+      throw '';
+    }
+
+    // Cabeçalho
+    document.getElementById('clubImg').src        = clube.imagem;
+    document.getElementById('clubImg').alt        = clube.nome;
+    document.getElementById('clubMembers').textContent =
+      `👥 ${clube.membros} membros`;
+    document.getElementById('clubName').textContent = clube.nome;
+
+    // Info Grid (idioma, categoria, tipo, criado em, dono, moderadores)
+    const infoFields = [
+      { label: 'Idioma',      value: clube.idioma },
+      { label: 'Categoria',   value: clube.categoria },
+      { label: 'Tipo',        value: clube.tipo },
+      { label: 'Criado em',   value: clube.data },
+      { label: 'Dono',        value: clube.dono },
+      { label: 'Moderadores', value: clube.mods }
+    ];
+    const infoGrid = document.getElementById('infoGrid');
+    renderList(infoGrid, infoFields, item => {
+      const div = document.createElement('div');
+      div.className = 'info-item';
+      div.innerHTML = `<strong>${item.label}</strong>${item.value}`;
+      return div;
+    });
+
+    // Descrição
+    document.getElementById('clubDesc').textContent = clube.descricao;
+
+    // Mural (exemplo de posts salvos ou vazio)
+    const muralData = clube.mural || [
+      { user: '@sistema', text: 'Seja bem-vindo!', time: 'agora' }
+    ];
+    const mural = document.getElementById('mural');
+    renderList(mural, muralData, post => {
+      const div = document.createElement('div');
+      div.className = 'mural-post';
+      div.innerHTML = `<strong>${post.user}:</strong> ${post.text}
+                       <small>${post.time}</small>`;
+      return div;
+    });
+
+    // Fórum de Discussões (dummy)
+    const disc = document.getElementById('forumDisc');
+    const topics = clube.topicos || [
+      { title: 'Primeiro tópico!', replies: 0, by: '@sistema' }
+    ];
+    renderList(disc, topics, t => {
+      const d = document.createElement('div');
+      d.className = 'forum-topic';
+      d.innerHTML = `<strong>${t.title}</strong>
+                     <small>${t.replies} respostas • iniciado por ${t.by}</small>`;
+      return d;
+    });
+
+    // Chat (dummy)
+    const chat = document.getElementById('forumChat');
+    const msgs = clube.chat || [
+      { user: '@sistema', text: 'bem-vindo ao chat!', time: 'agora' }
+    ];
+    renderList(chat, msgs, m => {
+      const d = document.createElement('div');
+      d.className = 'chat-message';
+      d.innerHTML = `<span>${m.user}:</span> ${m.text}
+                     <small>${m.time}</small>`;
+      return d;
+    });
+  </script>
+</body>
+</html>

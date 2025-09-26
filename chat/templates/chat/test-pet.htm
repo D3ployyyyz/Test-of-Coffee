@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>GooseDesktop-like — Test</title>
+<style>
+  :root{
+    --pet-size: 140px;
+    --glass: rgba(255,255,255,0.12);
+    --glass-strong: rgba(255,255,255,0.22);
+    --accent: #d99cff;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto; background:
+    linear-gradient(135deg,#f7f0ff 0%, #fff8f1 50%, #eefaf6 100%); overflow:hidden;}
+  .note {position:fixed;left:18px;bottom:18px;background:var(--glass);backdrop-filter:blur(8px);
+         padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);
+         box-shadow:0 8px 30px rgba(20,14,40,0.06); color:#2b2233; font-size:14px; z-index:99990}
+  /* Pet layer */
+  .pet-layer { position:fixed; right:28px; bottom:28px; z-index:99999; pointer-events:none; }
+  .pet {
+    width:var(--pet-size); height:var(--pet-size); pointer-events:auto; user-select:none;
+    position:relative; border-radius:18px; overflow:visible;
+    cursor:grab; display:block; transition: transform 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pet:active{ cursor:grabbing }
+  .pet-frame {
+    position:absolute; inset:0; border-radius:18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+    border:1px solid rgba(255,255,255,0.18); backdrop-filter: blur(6px) saturate(120%);
+    box-shadow: 0 12px 40px rgba(10,8,20,0.14);
+    pointer-events:none;
+  }
+  /* SVG body sits above frame */
+  .pet svg { position:relative; z-index:2; display:block; width:100%; height:100%; }
+  /* eye blink */
+  .eye { transform-origin: 52% 28%; animation: blink 6s infinite; }
+  @keyframes blink { 0%,94%{transform:scaleY(1)} 96%{transform:scaleY(0.12)} 100%{transform:scaleY(1)} }
+
+  /* actions classes */
+  .walk { animation: walk-rock 560ms ease-in-out infinite; }
+  @keyframes walk-rock { 0%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}100%{transform:rotate(-2deg)} }
+  .hop { animation: hop 820ms ease-out 1; }
+  @keyframes hop { 0%{transform:translateY(0)} 30%{transform:translateY(-18px)} 100%{transform:translateY(0)} }
+  .roll { animation: roll 900ms cubic-bezier(.2,.9,.2,1) 1; transform-origin:center; }
+  @keyframes roll { 0%{transform:rotate(0)}25%{transform:rotate(45deg)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)} }
+  .dance { animation: dance 1.4s linear infinite; }
+  @keyframes dance { 0%{transform:translateX(0) rotate(0)}25%{transform:translateX(6px) rotate(3deg)}50%{transform:translateX(-6px) rotate(-3deg)}75%{transform:translateX(6px) rotate(3deg)}100%{transform:translateX(0) rotate(0)} }
+  .happy { animation: happy 650ms ease; }
+  @keyframes happy { 0%{transform:translateY(0)}40%{transform:translateY(-10px)}100%{transform:translateY(0)} }
+
+  /* mood bubbles */
+  .mood {
+    position:absolute; left:50%; top:-20px; transform:translateX(-50%); display:flex; gap:6px; z-index:3;
+    pointer-events:none; font-size:14px; opacity:0; transition:opacity 160ms;
+  }
+  .mood.show{ opacity:1 }
+
+  /* fake cursor */
+  .fake-cursor {
+    position:fixed; width:18px; height:18px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #fff, #c5b8ff);
+    border:2px solid #3c2b63; transform:translate(-50%,-50%); z-index:9999998; pointer-events:none;
+    box-shadow:0 6px 18px rgba(30,20,60,0.25);
+  }
+
+  /* popup windows */
+  .g-popup {
+    position:fixed; width:320px; min-height:90px; border-radius:8px; z-index:99998;
+    background: linear-gradient(180deg,#fff,#fff8e6); border:2px solid #e6d6b8;
+    box-shadow: 0 18px 48px rgba(10,8,30,0.18); padding:10px 12px;
+    font-weight:600; color:#2d2433;
+  }
+  .g-popup .title { font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px }
+  .g-popup .close { cursor:pointer; background:#ffd9a8; padding:4px 8px; border-radius:6px; border:1px solid #e6b86a; font-weight:700 }
+
+  /* toast */
+  .g-toast { position:fixed; left:50%; transform:translateX(-50%); bottom:14px; z-index:9999999;
+    background:rgba(0,0,0,0.8); color:#fff; padding:10px 14px; border-radius:10px; font-weight:600; }
+  /* controls panel (small) */
+  .pet-controls {
+    position:absolute; right:calc(100% + 12px); bottom:0; display:flex; gap:8px; pointer-events:auto; z-index:99999;
+  }
+  .pc-btn { background:var(--glass-strong); border:1px solid rgba(255,255,255,0.12); padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700; font-size:13px; color:#2a2133 }
+  .pc-btn:hover{ transform:translateY(-4px); box-shadow:0 8px 24px rgba(20,12,40,0.12) }
+
+  /* responsive */
+  @media (max-width:520px){
+    :root{ --pet-size:100px; }
+    .pet-controls{ right: calc(100% + 6px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="note">
+  <strong>Goose Test</strong><br>
+  Clique no bichinho para honk. Atalhos: <kbd>P</kbd> Pet, <kbd>F</kbd> Fun, <kbd>M</kbd> Mischief, <kbd>S</kbd> Steal, <kbd>T</kbd> Teleport, <kbd>D</kbd> Dance
+</div>
+
+<!-- pet layer -->
+<div id="pet-layer" class="pet-layer" aria-hidden="false">
+  <div id="pet" class="pet" role="button" tabindex="0" aria-label="Bichinho Goose. Pressione Enter para interagir.">
+    <div class="pet-frame"></div>
+
+    <!-- mood bubble -->
+    <div id="mood" class="mood">
+      <div>💜</div><div>💛</div><div>💙</div>
+    </div>
+
+    <!-- controls -->
+    <div class="pet-controls" id="controls" style="display:none;">
+      <button class="pc-btn" data-act="follow">Seguir</button>
+      <button class="pc-btn" data-act="pet">Acariciar</button>
+      <button class="pc-btn" data-act="feed">Alimentar</button>
+      <button class="pc-btn" data-act="fun">Interagir</button>
+      <button class="pc-btn" data-act="mischief">Mischief</button>
+    </div>
+
+    <!-- SVG sprite (multi-part so we can change expressions) -->
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- body -->
+      <ellipse cx="100" cy="110" rx="58" ry="44" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <!-- wing -->
+      <path id="wing" d="M70 110 q30 -30 60 0 q-30 20 -60 0" fill="#fff7e8" stroke="#e9d8c6" stroke-width="1.6"/>
+      <!-- neck -->
+      <path id="neck" d="M120 70 q-10 -24 -24 -18 q-12 6 -8 24 q6 28 12 34" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <!-- head -->
+      <circle id="head" cx="106" cy="58" r="16" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <!-- beak (mouth group toggles) -->
+      <g id="beak-open" style="display:none">
+        <path d="M118 58 l18 6 l-18 6 z" fill="#ffd28a" stroke="#e6b56e" stroke-width="1.2"/>
+      </g>
+      <g id="beak-norm">
+        <path d="M118 58 l18 6 l-18 6 z" fill="#ffd28a" stroke="#e6b56e" stroke-width="1.2"/>
+      </g>
+      <!-- eye -->
+      <ellipse id="eye" class="eye" cx="100" cy="54" rx="3.6" ry="3.6" fill="#2b2130"/>
+      <!-- feet -->
+      <path id="feet" d="M86 150 l6 10 m12 -10 l6 10" stroke="#e6b56e" stroke-width="3" stroke-linecap="round"/>
+      <!-- sparkle -->
+      <circle cx="60" cy="40" r="4" fill="#fff6e8" opacity="0.9" />
+    </svg>
+  </div>
+</div>
+
+<!-- container for ephemeral items (popups, fake cursor, emojis) -->
+<div id="ephemeral-root" aria-hidden="true"></div>
+
+<script>
+/* Goose-like enhanced demo
+   - Many "crazy" interactions
+   - Sounds via WebAudio (created on first user gesture)
+   - Accessible keyboard shortcuts
+*/
+
+(() => {
+  const pet = document.getElementById('pet');
+  const mood = document.getElementById('mood');
+  const controls = document.getElementById('controls');
+  const ephemeral = document.getElementById('ephemeral-root');
+  let audioCtx = null;
+  let isDragging = false, dragOffset = {x:0,y:0};
+  let wanderTimer = null;
+  let autoFunInterval = null;
+  let fakeCursor = null;
+  let stealing = false;
+  let petState = {
+    follow:false,
+    mood:3,
+    x: null,
+    y: null
+  };
+
+  // restore saved
+  try {
+    const s = JSON.parse(localStorage.getItem('goose_state')||'null'); if (s) Object.assign(petState,s);
+  } catch(e){}
+
+  // apply initial position
+  function applyPos(){
+    if (petState.x==null||petState.y==null){
+      petState.x = window.innerWidth - (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pet-size'))||140) - 56;
+      petState.y = window.innerHeight - 220;
+    }
+    pet.style.position = 'fixed';
+    // clamp
+    const w = pet.offsetWidth, h = pet.offsetHeight;
+    pet.style.left = Math.max(8, Math.min(petState.x, window.innerWidth - w - 8)) + 'px';
+    pet.style.top  = Math.max(8, Math.min(petState.y, window.innerHeight - h - 8)) + 'px';
+  }
+  applyPos();
+
+  function saveState(){ try{ localStorage.setItem('goose_state', JSON.stringify(petState)); }catch(e){} }
+
+  // lazily create audio context on first user gesture
+  function ensureAudio(){
+    if (audioCtx) return audioCtx;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    } catch(e){
+      audioCtx = null;
+      return null;
+    }
+  }
+
+  function playHonk(opts={pitch:220,duration:0.32}){
+    const ctx = ensureAudio(); if(!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    const now = ctx.currentTime;
+    o.frequency.setValueAtTime(opts.pitch, now);
+    o.frequency.exponentialRampToValueAtTime(opts.pitch*2.8, now+0.12);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.14, now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+opts.duration);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now); o.stop(now+opts.duration+0.05);
+  }
+
+  function playLaugh(){
+    const ctx = ensureAudio(); if(!ctx) return;
+    // quick sequence of beeps
+    const now = ctx.currentTime;
+    const freqs=[320,280,360,420];
+    freqs.forEach((f,i)=>{
+      const o=ctx.createOscillator(); const g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(f, now + i*0.07);
+      g.gain.setValueAtTime(0.0001, now + i*0.07); g.gain.exponentialRampToValueAtTime(0.08, now + i*0.07 + 0.02);
+      o.connect(g); g.connect(ctx.destination); o.start(now + i*0.07); o.stop(now + i*0.07 + 0.18);
+    });
+  }
+
+  function showMood(){
+    mood.classList.add('show'); pet.classList.add('happy');
+    setTimeout(()=> mood.classList.remove('show'), 1200);
+    setTimeout(()=> pet.classList.remove('happy'), 700);
+  }
+
+  // random smooth move
+  let moveAnim = null;
+  function moveTo(x,y,dur=700){
+    if (moveAnim) cancelAnimationFrame(moveAnim.raf);
+    const start = performance.now(); const fromX = parseFloat(pet.style.left), fromY = parseFloat(pet.style.top);
+    const dx = x - fromX, dy = y - fromY;
+    const easeFn = t => (--t)*t*t+1; // easeOutCubic
+    function step(now){
+      const t = Math.min(1,(now-start)/dur);
+      const e = easeFn(t);
+      pet.style.left = (fromX + dx*e) + 'px';
+      pet.style.top  = (fromY + dy*e) + 'px';
+      if (t<1) moveAnim.raf = requestAnimationFrame(step);
+      else { petState.x = parseFloat(pet.style.left); petState.y = parseFloat(pet.style.top); saveState(); }
+    }
+    moveAnim = { raf: requestAnimationFrame(step) };
+  }
+
+  // wander
+  function startWander(){
+    stopWander();
+    wanderTimer = setInterval(()=>{
+      if (petState.follow) return;
+      if (isDragging) return;
+      const margin = 80;
+      const nx = Math.random() * (window.innerWidth - margin*2) + margin;
+      const ny = Math.random() * (window.innerHeight - margin*2) + margin;
+      pet.classList.add('walk');
+      moveTo(nx,ny,900 + Math.random()*700);
+      setTimeout(()=> pet.classList.remove('walk'), 900);
+    }, 3000 + Math.random()*2000);
+  }
+  function stopWander(){ if (wanderTimer) { clearInterval(wanderTimer); wanderTimer=null; } }
+
+  // fake cursor steal
+  function stealCursor(seconds=4000){
+    if (stealing) return;
+    stealing = true;
+    // hide real cursor
+    const origCursor = document.body.style.cursor;
+    document.documentElement.style.cursor = 'none';
+    document.body.style.cursor = 'none';
+    // create fake cursor
+    fakeCursor = document.createElement('div'); fakeCursor.className='fake-cursor';
+    ephemeral.appendChild(fakeCursor);
+    // move fake cursor around following pet, then run small 'drag' across page
+    let t=0;
+    const int = setInterval(()=>{
+      const bx = parseFloat(pet.style.left) + pet.offsetWidth/2;
+      const by = parseFloat(pet.style.top) + pet.offsetHeight/2;
+      // small jitter follow
+      fakeCursor.style.left = (bx + Math.sin(t/4)*24) + 'px';
+      fakeCursor.style.top  = (by + Math.cos(t/3)*18) + 'px';
+      t++;
+    }, 60);
+
+    // after a moment, fake cursor "drags" some elements
+    setTimeout(()=>{
+      // create playful drag trail
+      const trail = document.createElement('div'); trail.className='g-popup';
+      trail.style.left = '30px'; trail.style.top = '30px'; trail.textContent = 'URGH, I stole your mouse!';
+      ephemeral.appendChild(trail);
+      setTimeout(()=> trail.remove(), 2000);
+      // animate fake cursor racing across screen
+      let steps = 0;
+      const race = setInterval(()=>{
+        fakeCursor.style.left = (Math.random()*window.innerWidth) + 'px';
+        fakeCursor.style.top  = (Math.random()*window.innerHeight) + 'px';
+        steps++;
+        if (steps>8){ clearInterval(race);
+          clearInterval(int);
+          if (fakeCursor) fakeCursor.remove();
+          document.body.style.cursor = origCursor || '';
+          document.documentElement.style.cursor = origCursor || '';
+          stealing=false;
+        }
+      }, 140);
+    }, 1200);
+
+    // safety fallback
+    setTimeout(()=>{ if (stealing){ stealing=false; if(fakeCursor) fakeCursor.remove(); document.body.style.cursor=''; document.documentElement.style.cursor=''; } }, seconds+2000);
+  }
+
+  // open fake windows (draggable)
+  function openFakeWindow(title="goose.exe",text="hello :)"){
+    const w = document.createElement('div'); w.className='g-popup';
+    w.style.left = (40 + Math.random()*(window.innerWidth-420)) + 'px';
+    w.style.top  = (40 + Math.random()*(window.innerHeight-220)) + 'px';
+    w.innerHTML = `<div class="title"><span>${title}</span><button class="close">Fechar</button></div>
+                   <div class="body">${text}</div>`;
+    ephemeral.appendChild(w);
+    // close button
+    w.querySelector('.close').addEventListener('click', ()=> w.remove());
+    // make draggable
+    makeDraggable(w);
+    // remove after some time maybe
+    setTimeout(()=> { if (w.parentElement) w.remove(); }, 12000 + Math.random()*8000);
+    return w;
+  }
+
+  // make element draggable by pointer
+  function makeDraggable(el){
+    let down=false, ox=0, oy=0;
+    const hdr = el.querySelector('.title') || el;
+    hdr.style.cursor='grab';
+    hdr.addEventListener('pointerdown', (e)=>{
+      down=true; hdr.setPointerCapture(e.pointerId); ox = e.clientX - el.getBoundingClientRect().left; oy = e.clientY - el.getBoundingClientRect().top;
+      hdr.style.cursor='grabbing';
+    });
+    window.addEventListener('pointermove', (e)=>{
+      if(!down) return;
+      el.style.left = (e.clientX - ox) + 'px';
+      el.style.top  = (e.clientY - oy) + 'px';
+    });
+    hdr.addEventListener('pointerup', (e)=> { down=false; hdr.style.cursor='grab'; try{ hdr.releasePointerCapture && hdr.releasePointerCapture(e.pointerId);}catch(e){} });
+  }
+
+  // random quack/animations and "mischief" pack
+  function quackAndDo(action){
+    // ensure audio allowed
+    ensureAudio();
+    if (action === 'quack'){ playHonk({pitch:180, duration:0.36}); pet.classList.add('hop'); setTimeout(()=>pet.classList.remove('hop'),900); showMood(); }
+    if (action === 'honk'){ playHonk({pitch:320, duration:0.28}); pet.classList.add('roll'); setTimeout(()=>pet.classList.remove('roll'),1000); showMood(); }
+  }
+
+  // mischievous spree: type into inputs, open popups, rearrange some elements
+  function mischievousSpree(){
+    // open multiple windows
+    const msgs = ["Estou com fome 🍕","Quack quack 🦆","Você foi goose'd","Baixando memes..."];
+    for (let i=0;i<3;i++){ openFakeWindow("Alert", msgs[Math.floor(Math.random()*msgs.length)]); }
+    // write into first text input found
+    const inputs = Array.from(document.querySelectorAll('input[type=text], textarea'));
+    if (inputs.length){
+      const it = inputs[0];
+      const original = it.value || '';
+      let idx=0;
+      const txt = ["hey","u","were","goosed","🤣","quack"].join(' ');
+      const t = setInterval(()=>{ it.value = txt.slice(0, ++idx); if (idx>txt.length){ clearInterval(t); setTimeout(()=>it.value=original,4000); } }, 120);
+    }
+    // rearrange few images (if any)
+    const imgs = Array.from(document.querySelectorAll('img'));
+    imgs.slice(0,3).forEach(img=>{
+      img.style.transition = 'transform 0.6s ease';
+      img.style.transform = `translate(${(Math.random()-0.5)*200}px, ${(Math.random()-0.5)*200}px) rotate(${(Math.random()-0.5)*50}deg)`;
+      setTimeout(()=>{ img.style.transform=''; }, 4000);
+    });
+    // small laugh and mood
+    playLaugh(); showMood();
+  }
+
+  // emoji spit
+  function spitEmojis(count=6){
+    const pool = ["😂","💩","😈","🔥","🍌","🌶️","🐸","🍕","🌈","✨"];
+    for (let i=0;i<count;i++){
+      const s = document.createElement('div'); s.className='emoji'; s.textContent=pool[Math.floor(Math.random()*pool.length)];
+      s.style.position='fixed';
+      s.style.left = (parseFloat(pet.style.left) + pet.offsetWidth/2 + (Math.random()-0.5)*60) + 'px';
+      s.style.top  = (parseFloat(pet.style.top) + pet.offsetHeight/2 + (Math.random()-0.5)*20) + 'px';
+      s.style.pointerEvents='none'; s.style.fontSize = (18 + Math.random()*18) + 'px';
+      s.style.zIndex = 999997;
+      ephemeral.appendChild(s);
+      // animate float up and fade
+      s.animate([
+        { transform: 'translateY(0) scale(0.9)', opacity:1 },
+        { transform: `translateY(-${120 + Math.random()*120}px) scale(1.1)`, opacity:0 }
+      ], { duration: 1600 + Math.random()*800, easing: 'cubic-bezier(.2,.9,.2,1)'});
+      setTimeout(()=> s.remove(), 2400);
+    }
+    showMood(); playHonk({pitch:180 + Math.random()*120, duration:0.28});
+  }
+
+  // teleport fx
+  function teleport(){
+    const x = Math.random()*(window.innerWidth-160)+40;
+    const y = Math.random()*(window.innerHeight-160)+40;
+    // smoke emoji trail
+    for (let i=0;i<6;i++){
+      const p = document.createElement('div'); p.className='emoji'; p.style.left = pet.style.left; p.style.top = pet.style.top; p.textContent = Math.random()>0.5 ? '💨' : '✨';
+      ephemeral.appendChild(p);
+      p.animate([{ transform: 'scale(0.6)', opacity:1 },{ transform:'translateY(-40px) scale(1.2)', opacity:0}],{duration:420 + i*80, easing:'ease-out'});
+      setTimeout(()=>p.remove(), 900 + i*90);
+    }
+    // jump
+    pet.classList.add('hop');
+    setTimeout(()=>{ pet.classList.remove('hop'); moveTo(x,y,420); }, 240);
+    playHonk({pitch:300, duration:0.28});
+  }
+
+  // UI menu toggles
+  pet.addEventListener('mouseenter', ()=> controls.style.display='flex');
+  pet.addEventListener('mouseleave', ()=> { if(!isDragging) controls.style.display='none'; });
+
+  // pointer drag for pet
+  pet.addEventListener('pointerdown', (e)=>{
+    e.preventDefault(); isDragging=true; pet.setPointerCapture(e.pointerId);
+    dragOffset.x = e.clientX - pet.getBoundingClientRect().left; dragOffset.y = e.clientY - pet.getBoundingClientRect().top;
+    stopWander();
+  });
+  window.addEventListener('pointermove', (e)=>{
+    if (!isDragging) return;
+    const nx = e.clientX - dragOffset.x; const ny = e.clientY - dragOffset.y;
+    pet.style.left = Math.max(6, Math.min(nx, window.innerWidth - pet.offsetWidth - 6)) + 'px';
+    pet.style.top = Math.max(6, Math.min(ny, window.innerHeight - pet.offsetHeight - 6)) + 'px';
+  });
+  pet.addEventListener('pointerup', (e)=>{
+    if (!isDragging) return;
+    isDragging=false; try{ pet.releasePointerCapture(e.pointerId); }catch(e){}
+    petState.x = parseFloat(pet.style.left); petState.y = parseFloat(pet.style.top); saveState();
+    startWander();
+  });
+
+  // keyboard handlers
+  window.addEventListener('keydown', (e)=>{
+    // ignore when typing in input
+    if (["INPUT","TEXTAREA"].includes(document.activeElement.tagName)) return;
+    if (e.key === 'p' || e.key === 'P'){ // pet
+      playHonk({pitch:240}); showMood();
+    } else if (e.key === 'f' || e.key === 'F'){ // fun
+      spitEmojis(8);
+    } else if (e.key === 'm' || e.key === 'M'){ // mischief
+      mischievousSpree();
+    } else if (e.key === 's' || e.key === 'S'){ // steal cursor
+      stealCursor(4200);
+    } else if (e.key === 't' || e.key === 'T'){ // teleport
+      teleport();
+    } else if (e.key === 'd' || e.key === 'D'){ // dance
+      pet.classList.add('dance'); setTimeout(()=> pet.classList.remove('dance'), 4200);
+      playLaugh();
+    }
+  });
+
+  // pet click
+  pet.addEventListener('click', (e)=>{
+    ensureAudio(); playHonk({pitch:220}); showMood();
+  });
+
+  // double click: fun
+  pet.addEventListener('dblclick', (e)=> { spitEmojis(10); playLaugh(); });
+
+  // control buttons
+  controls.addEventListener('click', (ev)=>{
+    const btn = ev.target.closest('.pc-btn'); if(!btn) return;
+    const act = btn.dataset.act;
+    if (act === 'follow'){ petState.follow = !petState.follow; btn.textContent = petState.follow ? 'Seguir ✓' : 'Seguir'; if (petState.follow) { startFollow(); stopWander(); } else { stopFollow(); startWander(); } saveState(); }
+    if (act === 'pet'){ playHonk({pitch:200}); showMood(); }
+    if (act === 'feed'){ playHonk({pitch:320}); showMood(); petState.mood = Math.min(10,(petState.mood||3)+1); saveState(); }
+    if (act === 'fun'){ // random fun
+      const fns=[()=>spitEmojis(12), mischievousSpree, teleport, ()=>{ pet.classList.add('dance'); setTimeout(()=>pet.classList.remove('dance'),4200); playLaugh(); }];
+      fns[Math.floor(Math.random()*fns.length)]();
+    }
+    if (act === 'mischief'){ mischievousSpree(); }
+  });
+
+  // follow cursor behavior
+  let followHandler = null;
+  function startFollow(){
+    if (followHandler) return;
+    followHandler = (e) => {
+      const nx = Math.max(8, Math.min(e.clientX + 18, window.innerWidth - pet.offsetWidth - 8));
+      const ny = Math.max(8, Math.min(e.clientY + 18, window.innerHeight - pet.offsetHeight - 8));
+      moveTo(nx, ny, 220);
+    };
+    window.addEventListener('mousemove', followHandler);
+  }
+  function stopFollow(){ if (followHandler){ window.removeEventListener('mousemove', followHandler); followHandler=null; } }
+
+  // start background fun things
+  startWander();
+  autoFunInterval = setInterval(()=>{
+    if (isDragging || petState.follow) return;
+    const r=Math.random();
+    if (r<0.25) spitEmojis(6);
+    else if (r<0.5) quackAndDo('quack');
+    else if (r<0.8) { pet.classList.add('walk'); setTimeout(()=>pet.classList.remove('walk'),900); }
+    else mischievousSpree();
+  }, 12000 + Math.random()*8000);
+
+  // small helper to show toasts
+  function toast(msg, t=2200){
+    const el=document.createElement('div'); el.className='g-toast'; el.textContent=msg; document.body.appendChild(el);
+    setTimeout(()=> el.style.opacity=0, t-300); setTimeout(()=>el.remove(), t);
+  }
+
+  // expose some funcs for debugging
+  window.goose = {
+    quack: ()=> quackAndDo('quack'),
+    honk: ()=> quackAndDo('honk'),
+    spit: (n)=> spitEmojis(n||6),
+    steal: (s)=> stealCursor(s||4200),
+    openWin: (t,m)=> openFakeWindow(t||'goose.exe', m||'oi!'),
+    teleport: teleport,
+    mischief: mischievousSpree
+  };
+
+  // cleanup on resize
+  window.addEventListener('resize', ()=> {
+    // keep pet visible
+    const w = pet.offsetWidth, h = pet.offsetHeight;
+    pet.style.left = Math.max(6, Math.min(parseFloat(pet.style.left)||0, window.innerWidth - w - 6)) + 'px';
+    pet.style.top  = Math.max(6, Math.min(parseFloat(pet.style.top)||0, window.innerHeight - h - 6)) + 'px';
+  });
+
+  // small start pop
+  setTimeout(()=> toast('GooseDesktop - modo teste ativado ✨ (pressione M para mischief)'), 800);
+
+})();
+</script>
+</body>
+</html>

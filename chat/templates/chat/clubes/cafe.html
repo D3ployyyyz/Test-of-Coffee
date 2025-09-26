@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Clube - Viciados em Café</title>
+  <style>
+    body {
+      background: #f9f9fc;
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 1300px;
+      color: #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* COLUNA ESQUERDA */
+    .main-content {
+      flex: 1 1 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .club-container {
+      display: flex;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .club-image-box {
+      flex: 0 0 280px;
+      background: #eee;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .club-image-box img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .members-count {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .club-info-box {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 20px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .info-item strong {
+      display: block;
+      color: #666;
+      font-weight: normal;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .club-description {
+      background: #f3f3f3;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .mural {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .mural h2 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      color: #444;
+    }
+
+    .mural-post {
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .mural-post:first-child {
+      border-top: none;
+    }
+
+    .mural-post strong {
+      color: #333;
+    }
+
+    .mural-post small {
+      display: block;
+      color: #999;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* BARRA LATERAL */
+    .sidebar {
+      flex: 0 0 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .forum-block {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .forum-block h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .forum-topic {
+      margin-bottom: 12px;
+    }
+
+    .forum-topic strong {
+      display: block;
+      color: #222;
+      margin-bottom: 2px;
+    }
+
+    .forum-topic small {
+      color: #999;
+    }
+
+    .chat-message {
+      padding: 6px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .chat-message:first-child {
+      border-top: none;
+    }
+
+    .chat-message span {
+      font-weight: bold;
+      color: #444;
+    }
+
+    .chat-message small {
+      color: #aaa;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    @media (max-width: 1150px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-content">
+    <!-- CLUB HEADER -->
+    <div class="club-container">
+      <div class="club-image-box">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/A_small_cup_of_coffee.JPG" alt="Café">
+        <div class="members-count">👥 983.452 membros</div>
+      </div>
+
+      <div class="club-info-box">
+        <h1>☕ Viciados em Café</h1>
+
+        <div class="info-grid">
+          <div class="info-item"><strong>Idioma</strong>Português (Brasil)</div>
+          <div class="info-item"><strong>Categoria</strong>Cotidiano</div>
+          <div class="info-item"><strong>Tipo</strong>Pública</div>
+          <div class="info-item"><strong>Criado em</strong>12 de agosto de 2007</div>
+          <div class="info-item"><strong>Dono</strong>Ana Clara Rocha</div>
+          <div class="info-item"><strong>Moderadores</strong>@ana, @cafeinado, @baristavoador</div>
+        </div>
+
+        <div class="club-description">
+          Se o café fosse uma pessoa, eu me casaria com ele. Este clube é para todos os apaixonados por café — do expresso ao coado, do amargo ao doce. Aqui compartilhamos receitas, histórias, memes e até surtos cafeinados. Porque a vida pode até não estar boa, mas o café sempre estará quente.
+        </div>
+      </div>
+    </div>
+
+    <!-- MURAL -->
+    <div class="mural">
+      <h2>Mural de Recados</h2>
+
+      <div class="mural-post">
+        <strong>@ana:</strong> Acabei de testar um café com canela e gengibre. Recomendo!
+        <small>há 2 horas</small>
+      </div>
+
+      <div class="mural-post">
+        <strong>@gustavo:</strong> Café passado na hora é melhor que terapia.
+        <small>há 6 horas</small>
+      </div>
+
+      <div class="mural-post">
+        <strong>@marcela:</strong> Postei uma receita de cold brew no fórum 🍹
+        <small>ontem</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- FÓRUNS NA LATERAL -->
+  <div class="sidebar">
+    <!-- FORUM ESTILO ORKUT -->
+    <div class="forum-block">
+      <h3>🧵 Discussões</h3>
+
+      <div class="forum-topic">
+        <strong>Qual o melhor café do mercado?</strong>
+        <small>12 respostas • iniciado por @baristavoador</small>
+      </div>
+
+      <div class="forum-topic">
+        <strong>Vocês usam açúcar?</strong>
+        <small>37 respostas • iniciado por @docinho</small>
+      </div>
+
+      <div class="forum-topic">
+        <strong>Compartilhe sua xícara favorita ☕</strong>
+        <small>8 respostas • iniciado por @luan</small>
+      </div>
+    </div>
+
+    <!-- CHAT ESTILO MENSAGENS -->
+    <div class="forum-block">
+      <h3>💬 Bate-Papo</h3>
+
+      <div class="chat-message"><span>@karen:</span> Café da manhã sem café não existe <small>agora</small></div>
+      <div class="chat-message"><span>@edu:</span> Acabei de queimar o dedo na cafeteira 😂 <small>2min</small></div>
+      <div class="chat-message"><span>@sara:</span> To viciada em café gelado 🧊 <small>5min</small></div>
+    </div>
+  </div>
+
+</body>
+</html>

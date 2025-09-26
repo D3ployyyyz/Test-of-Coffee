@@ -1,0 +1,1180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>TANOTO — Perfil Aconchegante</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Indie+Flower&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'chat/style_.css' %}">
+  <link rel="stylesheet" href="{% static 'chat/_base.css' %}">
+
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+    }
+
+    .container {
+      transform: scale(0.9);
+      transform-origin: top center;
+      top: 0;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .profile-right-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem; /* espaçamento entre elementos */
+    }
+
+    .edit-button {
+      margin-left: 225px;
+      background: #ffe8cc;
+      color: #5d4037;
+      font-size: .8rem;
+      padding: 0.1rem 1.3rem;
+      border: 2px solid #e6c8ac;
+      border-radius: 16px;
+      text-decoration: none;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .edit-button:hover {
+      background: #ffdbb0;
+      transform: translateY(-2px);
+      box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Capa quadrada da playlist */
+    .playlist-cover-img {
+      width: 155px;       /* largura fixa */
+      max-height: 155px;      /* altura fixa igual à largura para ser quadrada */
+      object-fit: cover;  /* cortar mantendo proporção */
+      border-radius: 8px; /* cantos arredondados opcionais */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      cursor: pointer;    /* se quiser indicar que é clicável */
+    }
+
+    .vinyl-label {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 100%;
+      overflow: visible; /* permite que o círculo fique maior sem cortar */
+    }
+
+.vinyl-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 47px;     /* maior que o vinil */
+  height: 47px;
+  background-color: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+}
+
+#vinyl-label-img {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 1;
+  display: block;
+}
+
+:root{
+  --gap:16px;
+  --btn-d:50px;                 /* menor diâmetro */
+  --expanded-w:200px;           /* largura final do pill */
+  --pill-radius:999px;
+  --glass-blur:12px;
+  --trans-fast:220ms cubic-bezier(.2,.9,.25,1);
+  --trans-mid:360ms cubic-bezier(.2,1.05,.25,1); /* leve overshoot */
+  --shadow: 0 8px 26px rgba(12,12,14,0.06);
+  --shadow-strong: 0 18px 48px rgba(12,12,14,0.10);
+  --label-font: "Rubik", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  --label-color: #5b4750;
+  --splash: rgba(255,255,255,0.14);
+}
+
+
+/* container glass */
+.glass-nav{
+  position:fixed;
+  left:var(--gap);
+  top:var(--gap);
+  width:84px;
+  height: calc(100vh - calc(var(--gap) * 2));
+  padding: 20px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06));
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: var(--shadow);
+  display:flex; align-items:flex-start;
+  z-index:1000;
+}
+
+.glass-nav ul {
+  margin-top: 35px; /* distância da nav até os botões */
+}
+
+/* nav list */
+nav{ width:100%; display:flex; flex-direction:column; gap:12px; align-items:center; }
+ul{ list-style:none; padding:0; margin:0; width:100%; display:flex; flex-direction:column; gap:10px; align-items:center; }
+
+/* item container */
+.nav-item{ width:100%; display:flex; justify-content:center; align-items:center; position:relative; }
+
+/* button outer - keeps compact */
+.nav-btn{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  padding:0;
+  border-radius: var(--pill-radius);
+  border: none;
+  background: transparent;
+  cursor:pointer;
+  position:relative;
+  display:block;
+  transition: transform var(--trans-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the dot element (icon holder) */
+.dot{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  z-index:4;
+  pointer-events:none;
+}
+
+/* expanding background behind the dot — use scaleX for smooth expansion */
+.dot::before{
+  content:"";
+  position:absolute;
+  left:0; top:0;
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  background: var(--tint, rgba(255,255,255,0.04));
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: transform var(--trans-mid), border-radius var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
+  z-index:2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+/* icon visuals — stroke inherits from color var */
+.dot svg{ width:18px; height:18px; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke: var(--stroke, rgba(0,0,0,0.78)); z-index:5; transition: transform var(--trans-fast), stroke var(--trans-fast); }
+
+/* label sits inside the expanded area — positioned relative to item */
+.label{
+  position:absolute;
+  left: calc(var(--btn-d) + 12px);
+  top:50%;
+  transform: translateY(-50%) translateX(-8px);
+  font-family: var(--label-font);
+  font-weight:500;
+  font-size:0.95rem;
+  color: var(--label-color);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.9,.25,1);
+  z-index:5;
+  white-space:nowrap;
+}
+
+/* small ripple behind dot (on button) */
+.nav-btn::after{
+  content:"";
+  position:absolute;
+  left: calc(var(--btn-d) / 2);
+  top:50%;
+  width:56px; height:56px; border-radius:999px;
+  transform: translate(-50%,-50%) scale(.6);
+  background: radial-gradient(circle, var(--splash) 0%, rgba(255,255,255,0.02) 45%, transparent 60%);
+  opacity:0; pointer-events:none; z-index:1;
+  transition: opacity 160ms;
+}
+
+/* HOVER/FOCUS: expand the colored layer smoothly (scaleX) and show label; icon pulses */
+.nav-item:hover .nav-btn,
+.nav-item:focus-within .nav-btn{
+  transform: translateX(6px) scale(1.02);
+}
+.nav-item:hover .dot::before,
+.nav-item:focus-within .dot::before{
+  transform: scaleX(calc(var(--expanded-w) / var(--btn-d)));
+  border-radius: var(--pill-radius);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+}
+.nav-item:hover .label,
+.nav-item:focus-within .label{
+  opacity:1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events:auto;
+}
+/* icon micro-pulse */
+.nav-item:hover .dot svg,
+.nav-item:focus-within .dot svg{
+  transform: scale(1.06);
+}
+/* ripple anim */
+.nav-item:hover .nav-btn::after,
+.nav-item:focus-within .nav-btn::after{
+  animation: ripple 620ms cubic-bezier(.22,.9,.3,1);
+  opacity:1;
+}
+@keyframes ripple{
+  0%{ transform: translate(-50%,-50%) scale(.6); opacity:.36; }
+  60%{ transform: translate(-50%,-50%) scale(1.6); opacity:.08; }
+  100%{ transform: translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+
+/* pastel theming per item — tint and stroke color */
+.nav-item:nth-child(1){ --tint: rgba(246,221,226,0.86); --stroke:#C97A8A; }
+.nav-item:nth-child(2){ --tint: rgba(221,235,255,0.86); --stroke:#6FA0D6; }
+.nav-item:nth-child(3){ --tint: rgba(255,245,224,0.86); --stroke:#D1B26A; }
+.nav-item:nth-child(4){ --tint: rgba(224,250,236,0.86); --stroke:#66B886; }
+.nav-item:nth-child(5){ --tint: rgba(255,240,232,0.86); --stroke:#E0A47A; }
+.nav-item:nth-child(6){ --tint: rgba(240,234,255,0.86); --stroke:#8B6FAF; }
+
+/* focus ring accessible */
+.nav-btn:focus{ outline: none; box-shadow: 0 0 0 6px rgba(202,150,92,0.06); }
+
+/* active (visual) bump */
+.nav-btn[aria-current="true"] .dot::before{
+  box-shadow: 0 16px 42px rgba(0,0,0,0.08);
+}
+
+/* mobile: hide labels to keep compact */
+@media (max-width:520px){
+  .label{ display:none; }
+  :root{ --btn-d:46px; --expanded-w:160px; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .dot::before, .label, .nav-btn::after, .nav-btn, .dot svg { transition: none !important; animation:none !important; transform:none !important; }
+}
+
+
+
+/* main column */
+.main-area{
+  flex:1;
+  max-width:640px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: clamp(12px,2vh,18px);
+}
+
+/* reusable glass plate */
+.glass {
+  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.06));
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--soft-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  border: 1px solid var(--glass-border);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--med) ease, border-color var(--med) ease;
+}
+
+/* -------------------------
+   HERO (vitrificado principal)
+   ------------------------- */
+.hero{
+  width:100%;
+  padding: clamp(18px,2.4vw,26px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  /* stronger glass for hero */
+  background: linear-gradient(180deg, rgba(255,255,255,0.66), rgba(255,255,255,0.46));
+  border-radius: var(--radius);
+  box-shadow: var(--soft-shadow);
+  border: 1px solid rgba(255,255,255,0.58);
+  backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(125%);
+}
+
+/* a delicate sheen that slides over the hero */
+.hero::after{
+  content:"";
+  position:absolute;
+  inset: -20% -40%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.02) 100%);
+  transform: rotate(-18deg) translateX(-110%);
+  transition: transform 1.6s cubic-bezier(.2,.9,.3,1);
+  pointer-events:none;
+  mix-blend-mode: overlay;
+}
+.hero:hover::after{ transform: rotate(-18deg) translateX(0%); }
+
+/* subtle floating on hero */
+.hero{ animation: floatTiny 8s ease-in-out infinite; }
+
+
+
+/* ======= PERFIL VITRIFICADO ======= */
+#profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: clamp(16px,2vh,24px);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.66), rgba(255,255,255,0.46));
+  box-shadow: var(--soft-shadow);
+  
+  border: 1px solid rgba(255,255,255,0.58);
+  position: relative;
+  transition: all 0.3s ease;
+  animation: floatTiny 8s ease-in-out infinite;
+}
+
+/* sheen effect sobre o profile */
+
+/* LEFT PROFILE */
+.left-profile {
+  flex-shrink: 0;
+  text-align: center;
+}
+.img-container {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    display: inline-block;
+}
+
+.pic {
+    width: 100%;
+    height: 100%;
+    border-radius: 25%;
+    object-fit: cover;
+    box-shadow: var(--soft-shadow);
+    background: rgba(255,255,255,0.12);
+    position: relative;
+    z-index: 1;
+}
+
+/* Borda como imagem */
+.img-container::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    z-index: 0;
+    background: url('https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/322330/61f2f2c6f2c409c0ca2814f24c00efe5d23076b2.png') no-repeat center center;
+    background-size: cover;
+    border-radius: 10%;
+    z-index: 10000;
+}
+
+.badges {
+  margin-top: 10px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.badge {
+  font-size: 1rem;
+}
+
+/* CONTENT COLUMN */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.emotion { font-size: 1.6rem; }
+.name {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #5e4d42;
+}
+.meta {
+  font-size: 0.9rem;
+  color: #7e6653;
+}
+.description {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: #69503e;
+}
+.location {
+  font-size: 0.9rem;
+  color: #7e6653;
+}
+.likes {
+  margin-top: 0.5rem;
+}
+.like-item {
+  display: inline-block;
+  background: rgba(217,169,124,0.7);
+  color: #fff;
+  padding: 4px 10px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-size: 0.84rem;
+  backdrop-filter: blur(2px);
+}
+
+/* SOCIALS */
+.socials {
+  margin-top: 5px;
+  display: flex;
+  gap: 0.5rem;
+}
+.social-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+.socials a:hover .social-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* RIGHT COLUMN */
+.profile-right-column {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.edit-button {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.4);
+  color: #5e4d42;
+  font-weight: 600;
+  box-shadow: var(--soft-shadow);
+  transition: all 0.3s ease;
+}
+.edit-button:hover {
+  background: rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+}
+
+
+
+/* Hover no perfil inteiro */
+#profile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  z-index: 10000;
+}
+
+
+.img-container .pic {
+  transition: transform 0.4s ease;
+}
+
+.img-container:hover .pic {
+  transform: rotate(10deg);;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Borda como imagem */
+.img-container::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  background: url('https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/322330/61f2f2c6f2c409c0ca2814f24c00efe5d23076b2.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 10%;
+  transition: transform 0.4s ease;
+  
+}
+
+.img-container:hover::before {
+  transform: rotate(10deg);
+}
+
+/* Badges */
+.badge {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.badge:hover {
+  transform: scale(1.7);
+  color: #ffd700;
+}
+
+
+/* ===== LISTAS VITRIFICADAS ===== */
+#lists {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-top: 1rem;
+  z-index: 0;
+}
+
+.list h3 {
+  font-size: 1.1rem;
+  color: #5a3f2c;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  padding-bottom: 4px;
+}
+
+.list-items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 colunas por padrão */
+  gap: 0.9rem;
+  align-items: start;
+}
+
+/* Cada amigo/club vitrificado */
+.list-item {
+  width: 72px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #4a3425;
+
+  /* efeito vitrificado */
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.list-item:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.45);
+}
+
+/* Avatar ou logo */
+.friend-avatar, .list-item img {
+  width: 100%;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+}
+
+.list-item:hover img {
+  transform: scale(1.08);
+}
+
+/* Tooltip vitrificado */
+.tooltip {
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  font-size: 0.75rem;
+  color: #5c4433;
+  width: 160px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 0;
+}
+
+.list-item:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px);
+  pointer-events: auto;
+}
+
+.mural-recados h2 {
+  font-size: 1.4rem;
+  color: #5a3e36;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.recados-container {
+  position: relative;
+  min-height: 300px;
+}
+
+.recado {
+  width: 220px;
+  min-height: 100px;
+  background: rgba(255,255,235,0.85);
+  border: 1px solid rgba(255,215,180,0.6);
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  color: #4b3b2f;
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+.recado:hover {
+  transform: scale(1.03);
+  box-shadow: 2px 6px 18px rgba(0,0,0,0.12);
+}
+
+.recado-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: #6a5244;
+}
+
+.recado .autor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.avatar-container {
+  width: 28px;
+  height: 28px;
+  border-radius: 25%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.2);
+}
+
+.avatar-container .avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.excluir-recado {
+  border: none;
+  background: transparent;
+  color: #a55;
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.recado:hover .excluir-recado {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.excluir-recado:hover {
+  color: #e33;
+}
+
+.conteudo {
+  line-height: 1.3;
+  font-family: "Courier New", monospace;
+  margin-bottom: 0.5rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #7e6653;
+}
+
+
+
+  </style>
+</head>
+<body>
+
+
+  <aside class="glass-nav" aria-label="Barra lateral">
+    <nav aria-label="Navegação principal">
+      <ul>
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:home' %}" aria-label="Inicio">
+              <span class="dot" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L12 4 L21 11.5"></path><rect x="6" y="11.5" width="12" height="8" rx="1.2"></rect></svg>
+              </span>
+              <span class="label">Início</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:profile' %}" aria-label="Perfil">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8.5" r="3"></circle>
+                <path d="M5.5 20.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path>
+              </svg>
+            </span>
+            <span class="label">Perfil</span>
+          </a>
+       </li>
+
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:chat' %}" aria-label="Perfil">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14a1 1 0 0 1-1 1H8l-4 4V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1z"></path><path d="M7.5 10h9"></path></svg>
+            </span>
+            <span class="label">Chat</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Salas">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="9.2" r="2"></circle><circle cx="15.5" cy="9.2" r="2"></circle><path d="M4.5 19.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path></svg>
+            </span>
+            <span class="label">Salas</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Explorar">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M9.2 9.2 L14 10.5 L12.5 15.2 Z"></path></svg>
+            </span>
+            <span class="label">Explorar</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Inventário">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.2" y="7" width="11.6" height="12" rx="1.4"></rect><path d="M9 7v-1a3 3 0 0 1 6 0v1"></path><path d="M9.5 13.5h5"></path></svg>
+            </span>
+            <span class="label">Inventário</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <button style="margin-top: 40px;" id="toggle-sidebar" aria-label="Toggle sidebar"></button>
+
+  <!-- GIFs decorativos lo-fi -->
+ <!--- <div class="ambient-gifs">
+    <img src="https://media.tenor.com/ipuTozw3PXsAAAAj/pixel-cat.gif" class="ambient-gif cat" alt="gatinho pixel">
+    <img src="https://i.pinimg.com/originals/1a/56/ea/1a56eaaaf78869d7c6e0e620b2b98394.gif" class="ambient-gif coffee" alt="café quentinho">
+    <img src="https://img1.picmix.com/output/stamp/thumb/8/6/4/7/1007468_b04a4.gif" class="ambient-gif leaves" alt="folhas caindo">
+  </div> -->  
+
+  <div class="container">
+
+    <!-- PERFIL -->
+    <div id="profile">
+      <div class="left-profile">
+        {% if usuario.foto %}
+
+            <div class="img-container">
+              <img class="pic" src="{{ usuario.foto }}" alt="Foto de perfil">              
+            </div>
+          
+        {% endif %}
+          <div class="badges">
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+          <div class="badge">🏅</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="header-info">
+          <div class="emotion">{{ usuario.emoji }}</div>
+          <div class="name">{{ usuario.nome }}</div>
+          <div class="meta">
+            Desde {{ usuario.criado_em|date:"d/m/Y" }}
+          </div>
+          <div class="meta">
+            ☕ {{ usuario.dias_consecutivos }} cafés
+          </div>          
+        </div>
+        <div class="description">{{ usuario.descricao }}</div>
+        <div class="location">{{ usuario.localizacao }}</div>
+        <div class="likes">
+          {% for gosto in usuario.gostos %}
+            <span class="like-item">{{ gosto }}</span>
+          {% endfor %}
+          </div> 
+        <div class="socials">
+          <!-- redes sociais inseridas via JS -->
+          {% for social in usuario.redes_sociais %}
+            <a href="{{ social.url }}" target="_blank" rel="noopener noreferrer">
+              <img src="{% static 'icons/default.png' %}" alt="social icon"
+                  data-url="{{ social.url }}" class="social-icon" />
+            </a>          
+          {% endfor %}
+       
+        </div>
+      </div>
+
+      <div class="profile-right-column">
+        <div class="playlist-cover">
+          <!-- disco e capa da playlist -->
+          <div class="vinyl-disc">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-label">
+              <div class="vinyl-background"></div> <!-- círculo branco atrás -->
+              <img id="vinyl-label-img" src="" alt="Label"/>
+            </div>
+          </div>
+          <div id="playlist-image-container">
+            <!-- JS insere capa e iframe -->
+          </div>
+
+         </div>
+         
+         <!-- BOTÃO ABAIXO -->
+         <a href="{% url 'chat:edit_profile' %}" class="edit-button">Editar Perfil</a>
+       
+      </div>
+
+    </div>
+
+
+    <!-- MURAL & LISTAS -->
+    <div class="below-profile">
+      <div id="mural" style="position: relative;">
+        <form id="form-recado" autocomplete="off">
+          {% csrf_token %}
+          
+        </form>
+
+        <section class="mural-recados">
+          <h2>Mural de Recados ✨</h2>
+          <div class="recados-container">
+            {% for recado in recados %}
+              <article class="recado"
+                       style="position: absolute; left: {{ recado.left }}px; top: {{ recado.top }}px; z-index: {{ recado.z_index }};"
+                       data-id="{{ recado.id }}">
+                <div class="recado-header">
+                  <div class="autor">
+                    <img class="avatar" style="border-radius: 25%;" src="{{ recado.foto }}" alt="avatar {{ recado.autor }}" />
+                    <strong>{{ recado.autor }}</strong>
+                  </div>
+                  <button class="excluir-recado" data-id="{{ recado.id }}">🗑️</button>
+                </div>
+        
+                <p class="texto">{{ recado.texto }}</p>
+        
+                <div class="footer">
+                  <span class="data">{{ recado.data|date:"d/m" }}</span>
+                  <span class="reacoes">{{ recado.reacoes }}</span>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+        
+        
+
+
+       </div>
+
+      <div id="lists">
+        <div class="list">
+          <h3>Amigos</h3>
+          <div class="list-items">
+            {% for amigo in usuario.amigos.all %}
+              <div class="list-item">
+                <img class="friend-avatar" src="{{ amigo.foto|default:'https://i.pravatar.cc/60' }}" />
+                <div class="tooltip">
+                  {{ amigo.nome }}<br>
+                  {{ amigo.descricao|default:"Sem descrição" }}
+                </div>
+                <div>{{ amigo.nome }}</div>
+              </div>
+            {% empty %}
+              <p style="margin-top: 10px; color: #aaa;">Nenhum amigo ainda :(</p>
+            {% endfor %}
+          </div>
+        </div>        
+
+        <div class="list">
+          <h3>Clubes</h3>
+          <div class="list-items">
+            {% for clube in usuario_logado.clubes.all %}
+              <div class="list-item">
+                <img src="{{ clube.imagem }}" alt="Imagem do clube {{ clube.nome }}">
+                <div>{{ clube.nome }}</div>
+              </div>
+            {% empty %}
+              <p>Você ainda não faz parte de nenhum clube.</p>
+            {% endfor %}
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+
+  <div id="cursor"></div>
+
+  <script src="{% static 'chat/_profile.js' %}"></script>
+
+  <script>
+    const iconMap = [
+      { domain: 'youtube.com', icon: 'https://cdn-icons-png.flaticon.com/128/1384/1384028.png' },
+      { domain: 'instagram.com', icon: 'https://cdn-icons-png.flaticon.com/128/1384/1384031.png' },
+      { domain: 'x.com', icon: 'https://cdn-icons-png.flaticon.com/128/5968/5968958.png' },
+      { domain: 'linkedin.com', icon: 'https://cdn-icons-png.flaticon.com/128/1384/1384014.png' },
+      { domain: 'facebook.com', icon: 'https://cdn-icons-png.flaticon.com/128/1384/1384028.png' },
+      { domain: 'tiktok.com', icon: 'https://cdn-icons-png.flaticon.com/128/3046/3046120.png' }
+    ];
+  
+    function getIconForUrl(url) {
+      try {
+        const hostname = new URL(url).hostname.replace('www.', '');
+        const match = iconMap.find(site => hostname.includes(site.domain));
+        return match ? match.icon : 'https://cdn-icons-png.flaticon.com/128/565/565547.png';
+      } catch {
+        return 'https://cdn-icons-png.flaticon.com/128/565/565547.png';
+      }
+    }
+  
+    document.querySelectorAll('.social-icon').forEach(img => {
+      const url = img.dataset.url;
+      img.src = getIconForUrl(url);
+    });
+  </script>
+  
+  <script>
+    // 2) Carrega capa e iframe da playlist, se existir
+    (function(){
+      const playlistUrl = "{{ usuario.playlist|default:'' }}";
+      if (playlistUrl) {
+        loadPlaylistCover(playlistUrl);
+      }
+    })();
+  </script>
+<script>
+const cursor = document.getElementById('cursor');
+
+// Segue o mouse
+document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+
+// Muda cursor
+function setPointerCursor() {
+    cursor.style.backgroundImage = "url('/static/images/pointer.png')";
+}
+
+function setNormalCursor() {
+    cursor.style.backgroundImage = "url('/static/images/cursor.png')";
+}
+
+// Aplica aos elementos clicáveis
+document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', setPointerCursor);
+    el.addEventListener('mouseleave', setNormalCursor);
+});
+</script>
+
+
+
+<script>
+  (function(){
+    const form      = document.getElementById('form-recado');
+    const mural     = document.getElementById('mural');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let dragging = null, offsetX = 0, offsetY = 0;
+
+    function bringToFront(el) {
+      const all = Array.from(document.querySelectorAll('.recado'));
+      const maxZ = all.length
+        ? Math.max(...all.map(r => parseInt(r.style.zIndex) || 1))
+        : 1;
+      el.style.zIndex = maxZ + 1;
+      return el.style.zIndex;
+    }
+
+    function enableDrag(rec) {
+      rec.addEventListener('mousedown', e => {
+        dragging = rec;
+        offsetX = e.clientX - rec.offsetLeft;
+        offsetY = e.clientY - rec.offsetTop;
+        bringToFront(rec);
+        e.preventDefault();
+      });
+
+      rec.addEventListener('click', async e => {
+        const newZ = bringToFront(rec);
+        const id = rec.dataset.id;
+        if (!id) return;
+        try {
+          await fetch("{% url 'chat:mover_recado' 0 %}".replace('0', id), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+              left: parseInt(rec.style.left),
+              top: parseInt(rec.style.top),
+              z_index: parseInt(newZ)
+            })
+          });
+        } catch (err) {
+          console.error('Erro ao atualizar z-index:', err);
+        }
+        e.stopPropagation();
+      });
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const autor   = form.autor.value;
+      const foto    = form.foto.value;
+      const texto   = form.texto.value.trim();
+      const reacoes = form.reacoes.value.trim();
+      if (!autor || !texto) return;
+
+      const left = Math.floor(10 + Math.random() * (mural.clientWidth - 140));
+      const top  = Math.floor(60 + Math.random() * (mural.clientHeight - 170));
+
+      try {
+        const res = await fetch("{% url 'chat:enviar_recado' usuario.id %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ autor, foto, texto, reacoes, left, top })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          const r = data.recado;
+          const a = document.createElement('article');
+          a.className = 'recado';
+          a.dataset.id = r.id;
+          a.style.cssText = `position:absolute; left:${r.left}px; top:${r.top}px; z-index:${r.z_index || 10}`;
+          a.innerHTML = `
+            <div class="autor">
+              <img class="avatar" src="${r.foto}" alt="avatar ${r.autor}" />
+              <strong>${r.autor}</strong>
+            </div>
+            <p class="texto">${r.texto}</p>
+            <div class="footer">
+              <span class="data">${r.data}</span>
+              <span class="reacoes">${r.reacoes}</span>
+            </div>`;
+          enableDrag(a);
+          mural.appendChild(a);
+          form.reset();
+        } else {
+          console.error('Erro ao adicionar recado:', data);
+        }
+      } catch (err) {
+        console.error('Erro ao enviar recado:', err);
+      }
+    });
+
+    document.querySelectorAll('.recado').forEach((r, i) => {
+      r.style.position = 'absolute';
+      r.style.zIndex = r.style.zIndex || (i + 1);
+      enableDrag(r);
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const rectElem  = dragging.getBoundingClientRect();
+      const rectMural = mural.getBoundingClientRect();
+      let x = e.clientX - offsetX;
+      let y = e.clientY - offsetY;
+      x = Math.max(0, Math.min(x, rectMural.width  - rectElem.width));
+      y = Math.max(0, Math.min(y, rectMural.height - rectElem.height));
+      dragging.style.left = `${x}px`;
+      dragging.style.top  = `${y}px`;
+    });
+
+    document.addEventListener('mouseup', async () => {
+      if (!dragging) return;
+      const id = dragging.dataset.id;
+      const left = parseInt(dragging.style.left, 10);
+      const top  = parseInt(dragging.style.top, 10);
+      const z_index = parseInt(dragging.style.zIndex, 10);
+      try {
+        await fetch("{% url 'chat:mover_recado' 0 %}".replace('0', id), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ left, top, z_index })
+        });
+      } catch (err) {
+        console.error('Erro ao salvar posição:', err);
+      }
+      dragging = null;
+    });
+  })();
+</script>
+
+<script>
+  document.querySelectorAll('.excluir-recado').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      const id = btn.dataset.id;
+     
+        const resp = await fetch(`/excluir_recado_usuario/${id}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+          }
+        });
+        if (resp.ok) {
+          document.querySelector(`article[data-id="${id}"]`).remove();
+        } 
+      
+    });
+  });
+</script>
+
+
+</body>
+</html>

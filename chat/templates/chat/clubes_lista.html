@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Clubes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #f6f4f2;
+      --glass-bg: rgba(255,255,255,0.7);
+      --glass-border: rgba(255,255,255,0.4);
+      --base-escuro: #3b2f2f;
+      --base-medio: #ca965c;
+      --base-claro: #fff4e6;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--base-escuro);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Navbar vitrificada */
+    nav {
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(12px);
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    nav .logo {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--base-medio);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--base-escuro);
+      font-weight: 500;
+      transition: color .2s;
+    }
+
+    nav a:hover {
+      color: var(--base-medio);
+    }
+
+    /* Hero */
+    .hero {
+      margin: 30px auto;
+      padding: 40px 20px;
+      max-width: 900px;
+      text-align: center;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: var(--base-escuro);
+    }
+
+    .hero p {
+      margin-top: 8px;
+      color: #555;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--base-medio);
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .2s, transform .2s;
+    }
+
+    .btn-primary:hover {
+      background: #b07d4d;
+      transform: translateY(-2px);
+    }
+
+    /* Painel de clubes */
+    .panel {
+      margin: 20px auto 40px;
+      padding: 20px;
+      max-width: 900px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      backdrop-filter: blur(16px);
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      color: var(--base-escuro);
+    }
+
+    .panel ul {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel li {
+      padding: 12px 14px;
+      border-radius: 10px;
+      transition: background .2s, transform .2s;
+    }
+
+    .panel li:hover {
+      background: rgba(202,150,92,0.08);
+      transform: translateX(6px);
+    }
+
+    .panel a {
+      text-decoration: none;
+      color: var(--base-escuro);
+      font-weight: 500;
+    }
+
+    .panel a:hover {
+      color: var(--base-medio);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">✨ Éxodos</div>
+    <ul>
+      <li><a href="/">Início</a></li>
+      <li><a href="/mapa">Mapa</a></li>
+      <li><a href="/clubes">Clubes</a></li>
+      <li><a href="/perfil">Perfil</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Clubes</h1>
+    <p>Encontre, crie e participe de comunidades</p>
+    <a href="{% url 'chat:clubes_criar' %}" class="btn-primary">Criar novo clube</a>
+  </section>
+
+  <!-- Lista de Clubes -->
+  <section class="panel">
+    <h3>Clubes disponíveis</h3>
+    <ul>
+      {% for clube in clubes %}
+        <li>
+          <a href="{% url 'chat:clubes_detalhe' clube.pk %}">{{ clube.nome }}</a>
+        </li>
+      {% empty %}
+        <li>Nenhum clube encontrado.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+</body>
+</html>

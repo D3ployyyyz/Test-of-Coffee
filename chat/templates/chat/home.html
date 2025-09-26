@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tanoto - Boas-vindas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* -------------------------
+   THEME VARIABLES (base)
+   ------------------------- */
+:root{
+  --base-escuro:  #876445;     /* texto principal (mutável pelo JS) */
+  --base-medio:   #CA965C;     /* acentos (mutável pelo JS) */
+  --base-claro1:  #EEC373;     /* highlights */
+  --base-claro2:  #F4DFBA;     /* fundo (mutável pelo JS) */
+  --fundo: linear-gradient(180deg, rgba(244,223,186,0.92), rgba(238,195,115,0.06));
+
+  --glass: rgba(255,255,255,0.42);
+  --glass-2: rgba(255,255,255,0.14);
+  --glass-border: rgba(255,255,255,0.55);
+
+  --muted: rgba(135,100,69,0.08);
+  --gap: 1rem;
+  --radius: 14px;
+
+  --soft-shadow: 0 8px 28px rgba(18,16,14,0.06);
+  --soft-shadow-2: 0 18px 48px rgba(18,16,14,0.09);
+
+  --glass-blur: 14px;
+
+  --accent-glow: 0 8px 30px rgba(202,150,92,0.08);
+
+  /* animation timing */
+  --fast: 180ms;
+  --med: 360ms;
+  --slow: 900ms;
+}
+
+/* ---------------------------------
+   Base reset + smooth transitions
+   --------------------------------- */
+*{ box-sizing: border-box; margin:0; padding:0; font-family: 'Outfit', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+html,body{ height:100%; }
+body{
+  min-height:100vh;
+  background: var(--fundo);
+  color: var(--base-escuro);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding: clamp(16px,3vw,28px);
+  gap: clamp(12px,2vw,24px);
+  transition: background var(--med) ease, color var(--med) ease;
+  position:relative;
+  overflow-x: hidden;
+}
+
+/* subtle animated background blobs (vibe macOS) */
+body::before, body::after{
+  content:"";
+  position:fixed;
+  filter: blur(60px) saturate(120%);
+  opacity: .18;
+  pointer-events:none;
+  mix-blend-mode: screen;
+  transition: opacity var(--slow) ease;
+}
+body::before{
+  width:520px; height:520px;
+  left: -8%;
+  top: 6%;
+  background: radial-gradient(circle at 30% 30%, rgba(250,210,150,0.85), rgba(202,150,92,0.12) 40%, transparent 60%);
+  animation: floatSlow 14s linear infinite;
+}
+body::after{
+  width:420px; height:420px;
+  right: -6%;
+  bottom: 6%;
+  background: radial-gradient(circle at 70% 70%, rgba(160,110,180,0.75), rgba(110,70,150,0.08) 35%, transparent 55%);
+  animation: floatSlow 18s linear infinite reverse;
+}
+
+/* subtle global transitions for variables */
+:root, * { transition: color var(--med) ease, background var(--med) ease, border-color var(--med) ease, box-shadow var(--med) ease; }
+
+/* -------------------------
+   Layout
+   ------------------------- */
+.wrap{
+  display:flex;
+  gap: clamp(12px,2vw,24px);
+  width:100%;
+  max-width:1100px;
+  align-items:flex-start;
+}
+
+/* main column */
+.main-area{
+  flex:1;
+  max-width:640px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: clamp(12px,2vh,18px);
+}
+
+/* reusable glass plate */
+.glass {
+  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.06));
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--soft-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  border: 1px solid var(--glass-border);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--med) ease, border-color var(--med) ease;
+}
+
+/* -------------------------
+   HERO (vitrificado principal)
+   ------------------------- */
+.hero{
+  width:100%;
+  padding: clamp(18px,2.4vw,26px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  /* stronger glass for hero */
+  background: linear-gradient(180deg, rgba(255,255,255,0.66), rgba(255,255,255,0.46));
+  border-radius: var(--radius);
+  box-shadow: var(--soft-shadow);
+  border: 1px solid rgba(255,255,255,0.58);
+  backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(125%);
+}
+
+/* a delicate sheen that slides over the hero */
+.hero::after{
+  content:"";
+  position:absolute;
+  inset: -20% -40%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.02) 100%);
+  transform: rotate(-18deg) translateX(-110%);
+  transition: transform 1.6s cubic-bezier(.2,.9,.3,1);
+  pointer-events:none;
+  mix-blend-mode: overlay;
+}
+.hero:hover::after{ transform: rotate(-18deg) translateX(0%); }
+
+/* subtle floating on hero */
+.hero{ animation: floatTiny 8s ease-in-out infinite; }
+
+/* title + subtitle */
+h1{
+  font-size: clamp(1.6rem,2.6vw,2.4rem);
+  color: var(--base-medio);
+  letter-spacing:-0.01em;
+  margin-bottom:4px;
+  font-weight:500;
+  text-rendering:optimizeLegibility;
+  transform-origin:center;
+}
+.subtitle{
+  color: rgba(135,100,69,0.85);
+  font-size: .98rem;
+  text-align:center;
+  max-width:48ch;
+}
+
+/* -------------------------
+   CTA ROW / BUTTONS
+   ------------------------- */
+.cta-row{ display:flex; gap:12px; align-items:center; margin-top:6px; }
+
+/* primary button - glass + gradient + shimmer */
+.btn-primary{
+  --btn-radius: 12px;
+  position:relative;
+  overflow:hidden;
+  display:inline-grid;
+  align-items:center;
+  justify-content:center;
+  padding: .64rem 1.2rem;
+  border-radius: var(--btn-radius);
+  border: none;
+  cursor: pointer;
+  font-weight:600;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(202,150,92,0.98), rgba(202,150,92,0.92));
+  box-shadow: 0 10px 28px rgba(202,150,92,0.12), inset 0 -2px 6px rgba(0,0,0,0.06);
+  transition: transform .18s ease, box-shadow .25s ease, filter .25s ease;
+  will-change: transform;
+}
+.btn-primary::after{
+  content:"";
+  position:absolute;
+  inset: -40% 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.18), rgba(255,255,255,0.04));
+  transform: translateX(-120%) skewX(-12deg);
+  transition: transform .9s ease;
+  pointer-events:none;
+}
+.btn-primary:hover{
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 18px 46px rgba(202,150,92,0.14);
+}
+.btn-primary:hover::after{ transform: translateX(20%) skewX(-12deg); }
+
+/* ghost button - thin glass */
+.btn-ghost{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.28);
+  color: var(--base-escuro);
+  padding: .58rem 0.9rem;
+  border-radius: 10px;
+  font-weight:600;
+  cursor:pointer;
+  backdrop-filter: blur(6px);
+  transition: transform .18s ease, background .25s ease, border-color .25s ease;
+}
+.btn-ghost:hover{ transform: translateY(-3px); background: rgba(255,255,255,0.12); }
+
+/* small subtle focus for accessibility */
+button:focus{ outline: none; box-shadow: 0 0 0 4px rgba(202,150,92,0.08); }
+
+/* -------------------------
+   DICAS / PANELS / MAP
+   ------------------------- */
+.dicas{
+  width:100%;
+  border-radius: 12px;
+  padding: .6rem .9rem;
+  color: rgba(135,100,69,0.95);
+  font-style:italic;
+  font-size:.95rem;
+  box-shadow: 0 6px 18px rgba(120,80,50,0.04);
+  border: 1px solid rgba(255,255,255,0.5);
+  background: linear-gradient(180deg, rgba(238,195,115,0.08), rgba(244,223,186,0.04));
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
+}
+.dicas:hover{ transform: translateY(-3px); box-shadow: var(--soft-shadow-2); }
+
+/* map card - cleaner glass + hover lift */
+.map-card{
+  width:100%;
+  margin-top:6px;
+  height: 360px;
+  border-radius: 12px;
+  overflow:hidden;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  box-shadow: 0 10px 30px rgba(18,16,14,0.05);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  border:1px solid rgba(255,255,255,0.06);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
+}
+.map-card:hover{ transform: translateY(-6px); box-shadow: var(--soft-shadow-2); }
+
+/* map frame - inner texture + micro-tilt on pointer */
+.map-frame{
+  width: calc(100% - 36px);
+  height: calc(100% - 36px);
+  background:
+    repeating-linear-gradient(45deg, rgba(135,100,69,0.02) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.04));
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(135,100,69,0.6);
+  font-weight:600;
+  text-transform:uppercase;
+  font-size: .82rem;
+  user-select:none;
+  cursor: grab;
+  transition: transform .18s ease, box-shadow var(--fast) ease;
+}
+.map-frame:active{ cursor:grabbing; transform: scale(.995); }
+
+/* -------------------------
+   SIDEBAR / PANELS
+   ------------------------- */
+.side{
+  width: 300px;
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+  align-self:flex-start;
+}
+.panel{
+  background: linear-gradient(180deg, rgba(255,255,255,0.66), rgba(255,255,255,0.48));
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--soft-shadow);
+  border:1px solid rgba(255,255,255,0.5);
+  font-size: .95rem;
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
+}
+.panel h3{ color: var(--base-medio); font-size: 1rem; margin-bottom:8px; }
+.panel ul{ list-style:none; padding-left:0; margin:0; }
+.panel li{
+  padding:8px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition: background .14s ease, transform var(--fast) ease;
+  color: rgba(135,100,69,0.9);
+}
+.panel li:hover{ background: rgba(202,150,92,0.06); transform: translateX(6px); }
+
+/* profile mini */
+.profile-mini{ display:flex; align-items:center; gap:12px; }
+.profile-mini img{
+  width:54px; height:54px; border-radius:12px; object-fit:cover;
+  box-shadow: 0 6px 14px rgba(135,100,69,0.06);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* typography small */
+.meta .name{ font-weight:600; color: var(--base-escuro); }
+.meta .sub { font-size:.85rem; color: rgba(135,100,69,0.7); }
+
+/* -------------------------
+   UTILS / RESPONSIVE
+   ------------------------- */
+@media (max-width: 980px){
+  .wrap{ flex-direction:column; align-items:center; padding-bottom:40px; }
+  .side{ width:100%; max-width:640px; order: 99; }
+  .map-card{ height:320px; }
+}
+
+/* -------------------------
+   KEYFRAMES (animations)
+   ------------------------- */
+@keyframes floatSlow {
+  0%{ transform: translateY(0) translateX(0) scale(1); }
+  50%{ transform: translateY(-8px) translateX(6px) scale(.98); }
+  100%{ transform: translateY(0) translateX(0) scale(1); }
+}
+@keyframes floatTiny {
+  0%{ transform: translateY(0); }
+  50%{ transform: translateY(-3px); }
+  100%{ transform: translateY(0); }
+}
+
+/* small entrance shimmer for lists/cards */
+@keyframes shimmerSlide {
+  0%{ transform: translateY(8px); opacity:0; }
+  60%{ transform: translateY(0); opacity:1; }
+  100%{ transform: translateY(0); opacity:1; }
+}
+
+/* quick utility: apply to elements on load via JS if desired */
+.appear { animation: shimmerSlide .6s cubic-bezier(.2,.9,.3,1) both; }
+
+/* accessibility - prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+  * { animation: none !important; transition: none !important; }
+  body::before, body::after { display:none; }
+}
+
+
+:root{
+  --gap:16px;
+  --btn-d:50px;                 /* menor diâmetro */
+  --expanded-w:200px;           /* largura final do pill */
+  --pill-radius:999px;
+  --glass-blur:12px;
+  --trans-fast:220ms cubic-bezier(.2,.9,.25,1);
+  --trans-mid:360ms cubic-bezier(.2,1.05,.25,1); /* leve overshoot */
+  --shadow: 0 8px 26px rgba(12,12,14,0.06);
+  --shadow-strong: 0 18px 48px rgba(12,12,14,0.10);
+  --label-font: "Rubik", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  --label-color: #5b4750;
+  --splash: rgba(255,255,255,0.14);
+}
+
+
+/* container glass */
+.glass-nav{
+  position:fixed;
+  left:var(--gap);
+  top:var(--gap);
+  width:84px;
+  height: calc(100vh - calc(var(--gap) * 2));
+  padding: 20px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06));
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: var(--shadow);
+  display:flex; align-items:flex-start;
+  z-index:1000;
+}
+
+.glass-nav ul {
+  margin-top: 35px; /* distância da nav até os botões */
+}
+
+/* nav list */
+nav{ width:100%; display:flex; flex-direction:column; gap:12px; align-items:center; }
+ul{ list-style:none; padding:0; margin:0; width:100%; display:flex; flex-direction:column; gap:10px; align-items:center; }
+
+/* item container */
+.nav-item{ width:100%; display:flex; justify-content:center; align-items:center; position:relative; }
+
+/* button outer - keeps compact */
+.nav-btn{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  padding:0;
+  border-radius: var(--pill-radius);
+  border: none;
+  background: transparent;
+  cursor:pointer;
+  position:relative;
+  display:block;
+  transition: transform var(--trans-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the dot element (icon holder) */
+.dot{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  z-index:4;
+  pointer-events:none;
+}
+
+/* expanding background behind the dot — use scaleX for smooth expansion */
+.dot::before{
+  content:"";
+  position:absolute;
+  left:0; top:0;
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  background: var(--tint, rgba(255,255,255,0.04));
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: transform var(--trans-mid), border-radius var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
+  z-index:2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+/* icon visuals — stroke inherits from color var */
+.dot svg{ width:18px; height:18px; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke: var(--stroke, rgba(0,0,0,0.78)); z-index:5; transition: transform var(--trans-fast), stroke var(--trans-fast); }
+
+/* label sits inside the expanded area — positioned relative to item */
+.label{
+  position:absolute;
+  left: calc(var(--btn-d) + 12px);
+  top:50%;
+  transform: translateY(-50%) translateX(-8px);
+  font-family: var(--label-font);
+  font-weight:500;
+  font-size:0.95rem;
+  color: var(--label-color);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.9,.25,1);
+  z-index:5;
+  white-space:nowrap;
+}
+
+/* small ripple behind dot (on button) */
+.nav-btn::after{
+  content:"";
+  position:absolute;
+  left: calc(var(--btn-d) / 2);
+  top:50%;
+  width:56px; height:56px; border-radius:999px;
+  transform: translate(-50%,-50%) scale(.6);
+  background: radial-gradient(circle, var(--splash) 0%, rgba(255,255,255,0.02) 45%, transparent 60%);
+  opacity:0; pointer-events:none; z-index:1;
+  transition: opacity 160ms;
+}
+
+/* HOVER/FOCUS: expand the colored layer smoothly (scaleX) and show label; icon pulses */
+.nav-item:hover .nav-btn,
+.nav-item:focus-within .nav-btn{
+  transform: translateX(6px) scale(1.02);
+}
+.nav-item:hover .dot::before,
+.nav-item:focus-within .dot::before{
+  transform: scaleX(calc(var(--expanded-w) / var(--btn-d)));
+  border-radius: var(--pill-radius);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+}
+.nav-item:hover .label,
+.nav-item:focus-within .label{
+  opacity:1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events:auto;
+}
+/* icon micro-pulse */
+.nav-item:hover .dot svg,
+.nav-item:focus-within .dot svg{
+  transform: scale(1.06);
+}
+/* ripple anim */
+.nav-item:hover .nav-btn::after,
+.nav-item:focus-within .nav-btn::after{
+  animation: ripple 620ms cubic-bezier(.22,.9,.3,1);
+  opacity:1;
+}
+@keyframes ripple{
+  0%{ transform: translate(-50%,-50%) scale(.6); opacity:.36; }
+  60%{ transform: translate(-50%,-50%) scale(1.6); opacity:.08; }
+  100%{ transform: translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+
+/* pastel theming per item — tint and stroke color */
+.nav-item:nth-child(1){ --tint: rgba(246,221,226,0.86); --stroke:#C97A8A; }
+.nav-item:nth-child(2){ --tint: rgba(221,235,255,0.86); --stroke:#6FA0D6; }
+.nav-item:nth-child(3){ --tint: rgba(255,245,224,0.86); --stroke:#D1B26A; }
+.nav-item:nth-child(4){ --tint: rgba(224,250,236,0.86); --stroke:#66B886; }
+.nav-item:nth-child(5){ --tint: rgba(255,240,232,0.86); --stroke:#E0A47A; }
+.nav-item:nth-child(6){ --tint: rgba(240,234,255,0.86); --stroke:#8B6FAF; }
+
+/* focus ring accessible */
+.nav-btn:focus{ outline: none; box-shadow: 0 0 0 6px rgba(202,150,92,0.06); }
+
+/* active (visual) bump */
+.nav-btn[aria-current="true"] .dot::before{
+  box-shadow: 0 16px 42px rgba(0,0,0,0.08);
+}
+
+/* mobile: hide labels to keep compact */
+@media (max-width:520px){
+  .label{ display:none; }
+  :root{ --btn-d:46px; --expanded-w:160px; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .dot::before, .label, .nav-btn::after, .nav-btn, .dot svg { transition: none !important; animation:none !important; transform:none !important; }
+}
+
+</style>
+
+</head>
+<body>
+
+    <aside class="glass-nav" aria-label="Barra lateral">
+    <nav aria-label="Navegação principal">
+      <ul>
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Início">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L12 4 L21 11.5"></path><rect x="6" y="11.5" width="12" height="8" rx="1.2"></rect></svg>
+            </span>
+            <span class="label">Início</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:profile' %}" aria-label="Perfil">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8.5" r="3"></circle>
+                <path d="M5.5 20.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path>
+              </svg>
+            </span>
+            <span class="label">Perfil</span>
+          </a>
+       </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Chat">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14a1 1 0 0 1-1 1H8l-4 4V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1z"></path><path d="M7.5 10h9"></path></svg>
+            </span>
+            <span class="label">Chat</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Salas">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="9.2" r="2"></circle><circle cx="15.5" cy="9.2" r="2"></circle><path d="M4.5 19.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path></svg>
+            </span>
+            <span class="label">Salas</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Explorar">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M9.2 9.2 L14 10.5 L12.5 15.2 Z"></path></svg>
+            </span>
+            <span class="label">Explorar</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Inventário">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.2" y="7" width="11.6" height="12" rx="1.4"></rect><path d="M9 7v-1a3 3 0 0 1 6 0v1"></path><path d="M9.5 13.5h5"></path></svg>
+            </span>
+            <span class="label">Inventário</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="wrap">
+    <main class="main-area">
+      <section class="hero" role="region" aria-label="Boas vindas">
+      <div id="clock" style="font-weight:600; font-size:1.1rem; color:var(--base-escuro); margin-top:8px;"></div>
+
+        <h1>Tanoto</h1>
+        <div class="subtitle">Bem-vindo(a) a um novo mundo interativo — explore, desenhe, converse e descubra pessoas próximas.</div>
+
+        <div class="cta-row" aria-hidden="false">
+          <button class="btn-primary" onclick="window.location.href='{% url 'chat:chat' %}'">Iniciar Chat</button>
+
+          <button class="btn-ghost" onclick="openCreate()">Criar Post</button>
+        </div>
+
+        <div class="dicas" id="dicas">Seja gentil com outros usuários. Proteja seus dados pessoais.</div>
+
+       <div class="map-card" aria-hidden="false" style="position: relative;">
+  <div class="map-frame" id="map-frame" style="position: relative;">
+
+    <!-- IFRAME -->
+    <iframe 
+      src="{% url 'chat:wplace' %}" 
+      title="Preview Jornal" 
+      width="100%" 
+      height="100%" 
+      style="border: none; border-radius: 10px; overflow: hidden;">
+    </iframe>
+
+    <!-- TEXTO SOBREPOSTO -->
+    <div class="map-overlay">
+      PREVIEW DO WPLACE — ARRASTE PARA EXPLORAR
+    </div>
+  </div>
+</div>
+
+<style>
+  .map-frame {
+    position: relative;
+  }
+
+  .map-overlay {
+    position: absolute;
+  }
+</style>
+
+        
+      </section>
+
+      <!-- (opcionais) cards menores abaixo -->
+      <div style="display:flex; gap:12px; width:100%; justify-content:space-between;">
+        <div style="flex:1;">
+          <div class="panel" style="display:flex; align-items:center; gap:12px;">
+            <img src="https://via.placeholder.com/64x64.png?text=🌿" alt="" style="width:64px;height:64px;border-radius:12px; object-fit:cover;box-shadow:0 6px 12px rgba(0,0,0,0.04);">
+            <div>
+              <div style="font-weight:700; color:var(--base-escuro)">Descubra</div>
+              <div style="font-size:.9rem; color:rgba(135,100,69,0.7)">Explorar territórios, ver conteúdo em destaque</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width:180px;">
+          <div class="panel" style="text-align:center; font-weight:600; color:var(--base-medio)">🎲 Surpreenda-me</div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="side" aria-label="Painel lateral">
+      <section class="panel" aria-labelledby="p1">
+        <h3 id="p1">Perfis da Semana</h3>
+        <ul id="perfis">
+          <li><span style="width:44px;height:44px;background:var(--muted);display:inline-block;border-radius:8px"></span> <span style="font-weight:600">Ana</span> <small style="margin-left:auto;color:rgba(135,100,69,0.6)">+82%</small></li>
+          <li><span style="width:44px;height:44px;background:var(--muted);display:inline-block;border-radius:8px"></span> <span style="font-weight:600">Bruno</span> <small style="margin-left:auto;color:rgba(135,100,69,0.6)">+78%</small></li>
+          <li><span style="width:44px;height:44px;background:var(--muted);display:inline-block;border-radius:8px"></span> <span style="font-weight:600">Carla</span> <small style="margin-left:auto;color:rgba(135,100,69,0.6)">+74%</small></li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="p2">
+        <h3 id="p2">Clubes da Semana</h3>
+        <ul>
+          <li>Clube Lo-fi</li>
+          <li>Clube Desenho</li>
+          <li>Clube Música</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="p3">
+        <h3 id="p3">Notícias</h3>
+        <ul>
+          <li>Nova coleção de temas disponível</li>
+          <li>Manutenção programada amanhã</li>
+          <li>Evento: Noite Lo-fi neste sábado</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+<script>
+
+(function(){
+  const dicas = [
+    "Seja gentil com outros usuários.",
+    "Proteja suas informações pessoais.",
+    "Respeite o trabalho criativo dos outros.",
+    "Participe de clubes para encontrar afinidades.",
+    "Use o mapa para descobrir espaços novos."
+  ];
+  
+  const el = document.getElementById('dicas');
+  let i = 0;
+
+  function showDica(text) {
+    el.innerHTML = '';
+
+    // Agora divide mantendo espaços
+    text.split('').forEach((char, idx) => {
+      const span = document.createElement('span');
+      // Se for espaço, renderiza como espaço real
+      span.textContent = (char === ' ') ? '\u00A0' : char;
+      span.style.opacity = 0;
+      span.style.display = 'inline-block';
+      span.style.whiteSpace = 'pre';  // garante espaço visível
+      span.style.transform = 'translateY(8px)';
+      span.style.transition = `opacity 0.3s ${idx*40}ms ease, transform 0.3s ${idx*40}ms ease`;
+      el.appendChild(span);
+      
+      setTimeout(() => {
+        span.style.opacity = 1;
+        span.style.transform = 'translateY(0)';
+      }, 50);
+    });
+  }
+
+  setInterval(() => {
+    i = (i+1) % dicas.length;
+    showDica(dicas[i]);
+  }, 5000);
+
+  // Inicial
+  showDica(dicas[i]);
+})();
+
+
+  // mapa: pan + zoom simples (mantém a sensação de "preview" - sem conteúdo real)
+  (function(){
+    const frame = document.getElementById('map-frame');
+    let dragging = false, startX=0, startY=0, tx=0, ty=0, scale=1;
+    frame.addEventListener('mousedown', (e)=> {
+      dragging = true; startX = e.clientX - tx; startY = e.clientY - ty;
+      frame.style.cursor = 'grabbing';
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+    });
+    function move(e){
+      if(!dragging) return;
+      tx = e.clientX - startX; ty = e.clientY - startY;
+      frame.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }
+    function up(){
+      dragging = false; frame.style.cursor='grab';
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    }
+    frame.addEventListener('wheel', (ev)=> {
+      ev.preventDefault();
+      const delta = ev.deltaY < 0 ? 1.08 : 0.92;
+      scale = Math.min(2.2, Math.max(0.5, scale * delta));
+      frame.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }, { passive:false });
+
+    // interação de demonstração
+      window.startChat = () => {
+        window.location.href = "{% url 'chat:home' %}";
+      };
+    window.openCreate = ()=> { alert('Abrir criador de post...'); };
+  })();
+</script>
+
+<script>
+
+
+function updateClock() {
+  const now = new Date(); // hora do PC
+  const hours = String(now.getHours()).padStart(2,'0');
+  const minutes = String(now.getMinutes()).padStart(2,'0');
+  const seconds = String(now.getSeconds()).padStart(2,'0');
+
+  const clockEl = document.getElementById('clock');
+  clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+// roda a cada segundo
+setInterval(updateClock, 1000);
+updateClock(); // atualiza imediatamente
+
+
+</script>
+
+<script>
+function lerpColor(a, b, t) {
+  return a.map((v,i)=> Math.round(v + (b[i]-v)*t));
+}
+
+// cores base [r,g,b] - dia
+const dayColors = {
+  baseEscuro: [135,100,69],
+  baseMedio:  [202,150,92],
+  baseClaro1: [238,195,115],
+  baseClaro2: [244,223,186],
+  muted:      [135,100,69],
+  glassBorder:[255,255,255]
+};
+
+// cores base [r,g,b] - noite
+const nightColors = {
+  baseEscuro: [135,100,69],
+  baseMedio:  [202,150,92],
+  baseClaro1: [238,195,115],
+  baseClaro2: [244,223,186],
+  muted:      [135,100,69],
+  glassBorder:[255,255,255]
+};
+
+function updateTheme() {
+  const now = new Date();
+  const hour = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const root = document.documentElement;
+
+  let t=0; // fator de interpolação 0->1
+
+  if(hour >= 6 && hour < 7){
+    t = (minutes*60 + seconds)/3600; // clareando
+  } else if(hour >= 18 && hour < 19){
+    t = (minutes*60 + seconds)/3600; // escurecendo
+  }
+
+  const isDay = (hour >= 7 && hour < 18);
+
+  // função para interpolar cores individuais
+  function getColor(name) {
+    if(hour >=6 && hour <7) return lerpColor(nightColors[name], dayColors[name], t);
+    if(hour >=18 && hour <19) return lerpColor(dayColors[name], nightColors[name], t);
+    return isDay ? dayColors[name] : nightColors[name];
+  }
+
+  // atualiza variáveis CSS
+  root.style.setProperty('--base-escuro', `rgb(${getColor('baseEscuro').join(',')})`);
+  root.style.setProperty('--base-medio',  `rgb(${getColor('baseMedio').join(',')})`);
+  root.style.setProperty('--base-claro1', `rgb(${getColor('baseClaro1').join(',')})`);
+  root.style.setProperty('--base-claro2', `rgb(${getColor('baseClaro2').join(',')})`);
+  root.style.setProperty('--muted',       `rgba(${getColor('muted').join(',')},0.08)`);
+  root.style.setProperty('--glass-border', `rgba(${getColor('glassBorder').join(',')},0.55)`);
+
+  // atualiza fundo
+  const f0 = getColor('baseClaro2');
+  const f1 = getColor('baseClaro1');
+  const fundo = `linear-gradient(180deg, rgba(${f0[0]},${f0[1]},${f0[2]},0.9), rgba(${f1[0]},${f1[1]},${f1[2]},0.06))`;
+  root.style.setProperty('--fundo', fundo);
+
+  // atualiza o relógio
+  const clockEl = document.getElementById('clock');
+  const h = String(hour).padStart(2,'0');
+  const m = String(minutes).padStart(2,'0');
+  const s = String(seconds).padStart(2,'0');
+  clockEl.textContent = `${h}:${m}:${s}`;
+}
+
+// atualiza a cada segundo
+setInterval(updateTheme, 1000);
+updateTheme();
+</script>
+
+
+</body>
+</html>

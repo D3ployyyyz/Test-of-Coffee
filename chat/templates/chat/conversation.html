@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>💬 Conversa com {{ amigo.nome }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- WaveSurfer.js -->
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, #0f0f0f, #1c1c1c);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      width: 95%;
+      max-width: 800px;
+      height: 95vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    #mensagens {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mensagem {
+      max-width: 70%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      position: relative;
+      animation: fadeIn 0.3s ease-in-out;
+      backdrop-filter: blur(6px);
+      background: rgba(255, 255, 255, 0.08);
+      word-wrap: break-word;
+    }
+
+    .enviada {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #6c5ce7, #341f97);
+      color: white;
+      border-bottom-right-radius: 0.3rem;
+    }
+
+    .recebida {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f1f1f1;
+      border-bottom-left-radius: 0.3rem;
+    }
+
+    .mensagem time {
+      font-size: 0.7rem;
+      color: #ccc;
+      margin-top: 0.3rem;
+      display: block;
+      text-align: right;
+    }
+
+    .mensagem img,
+    .mensagem video {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .mensagem a {
+      color: #74b9ff;
+      text-decoration: none;
+      word-break: break-word;
+      margin-top: 0.4rem;
+      display: inline-block;
+    }
+
+    #input-area {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #mensagem {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      background: #222;
+      border: none;
+      border-radius: 2rem;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    #mensagem::placeholder {
+      color: #aaa;
+    }
+
+    #midia-input {
+      display: none;
+    }
+
+    #midia-label, button {
+      cursor: pointer;
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    #midia-label:hover,
+    button:hover {
+      background: #5945bd;
+    }
+
+    #record-btn.recording {
+      background: #e17055;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Scrollbar personalizada */
+    #mensagens::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #mensagens::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+    }
+
+    #mensagens::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+.audio-player {
+      max-height: 4px;
+      max-width: 400px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .waveform {
+      width: 1000px;
+      height: 20px;
+    }
+    .play-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      margin-top: 20px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .audio-time {
+      font-size: 14px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <header>💬 Conversa com {{ amigo.nome }}</header>
+
+    <main id="mensagens">
+      {% for msg in mensagens %}
+        <div class="mensagem {% if msg.remetente.id == request.session.usuario_id %}enviada{% else %}recebida{% endif %}">
+          
+          {# 1) Áudio gravado pelo microfone #}
+          {% if msg.audio %}
+            <div class="audio-player" data-src="{{ msg.audio.url }}" id="audio-player-{{ msg.id }}">
+              <button class="play-btn" aria-label="Tocar/pausar áudio">▶️</button>
+              <div class="waveform" id="waveform-{{ msg.id }}"></div>
+              <span class="audio-time">00:00</span>
+            </div>
+
+          {% elif msg.midia %}
+            {% with url=msg.midia.url ext=url|slice:"-4:"|lower %}
+              
+              {# 2) Áudio enviado como arquivo #}
+              {% if ext in ".mp3,.wav,.ogg,.webm,.m4a,.aac" %}
+                <div class="audio-player" data-src="{{ url }}" id="audio-player-{{ msg.id }}">
+                  <button class="play-btn" aria-label="Tocar/pausar áudio">▶️</button>
+                  <div class="waveform" id="waveform-{{ msg.id }}"></div>
+                  <span class="audio-time">00:00</span>
+                </div>
+
+              {# 3) Imagem #}
+              {% elif ext in ".png,.jpg,.jpeg,.gif" %}
+                <img src="{{ url }}" alt="Imagem enviada" />
+
+              {# 4) Vídeo #}
+              {% elif ext in ".mp4,.webm,.mov,.avi,.wmv,.flv,.mkv" %}
+                <video controls>
+                  <source src="{{ url }}">
+                  Seu navegador não suporta vídeo.
+                </video>
+
+              {# 5) Qualquer outro #}
+              {% else %}
+                <a href="{{ url }}" download target="_blank" rel="noopener noreferrer">
+                  📄 Baixar {{ msg.midia.name|cut:"midias/" }}
+                </a>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+
+          {# 6) Conteúdo textual #}
+          {% if msg.conteudo %}
+            <p>{{ msg.conteudo }}</p>
+          {% endif %}
+
+          <time>{{ msg.timestamp|date:"H:i" }}</time>
+        </div>
+      {% endfor %}
+    </main>
+
+    <div id="input-area">
+      <button id="record-btn" title="Gravar áudio">🎤</button>
+      <input type="text" id="mensagem" placeholder="Digite ou grave..." autocomplete="off" />
+      <label id="midia-label" for="midia-input">📎</label>
+      <input type="file" id="midia-input"/>
+      <button id="send-btn">Enviar</button>
+    </div>
+  </div>
+<script>
+(function() {
+  const csrftoken = document.cookie
+    .split('; ')
+    .find(r => r.startsWith('csrftoken='))
+    ?.split('=')[1];
+  const convId = "{{ conv_id }}";
+  const userId = "{{ request.session.usuario_id }}";
+
+  const mensDiv = document.getElementById('mensagens');
+  const inpText = document.getElementById('mensagem');
+  const btnSend = document.getElementById('send-btn');
+  const btnRec  = document.getElementById('record-btn');
+  const inpMid  = document.getElementById('midia-input');
+
+  let mediaRecorder, audioChunks = [];
+  let lastMessageId = 0;
+
+  // Guarda instâncias WaveSurfer por player ID
+  const wavePlayers = new Map();
+
+  // Extensões
+  const AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.webm', '.m4a', '.aac'];
+  const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.gif'];
+  const VIDEO_EXTS = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.flv', '.mkv'];
+
+  function isAtBottom() {
+    return mensDiv.scrollHeight - mensDiv.clientHeight - mensDiv.scrollTop < 50;
+  }
+
+  function createWaveSurfer(container, url) {
+    const ws = WaveSurfer.create({
+      container,
+      waveColor: '#6c5ce7',
+      progressColor: '#341f97',
+      cursorColor: '#a29bfe',
+      height: 40,
+      barWidth: 3,
+      barRadius: 3,
+      responsive: true,
+      normalize: true,
+      hideScrollbar: true,
+    });
+    ws.load(url);
+    return ws;
+  }
+
+  function initAudioPlayer(el) {
+    const src = el.dataset.src;
+    if (!src) return;
+    const ws = createWaveSurfer(el.querySelector('.waveform'), src);
+    wavePlayers.set(el.id, ws);
+
+    const btn = el.querySelector('.play-btn');
+    const time = el.querySelector('.audio-time');
+    let playing = false;
+
+    ws.on('audioprocess', () => {
+      const t = ws.getCurrentTime();
+      const mm = String(Math.floor(t/60)).padStart(2,'0');
+      const ss = String(Math.floor(t%60)).padStart(2,'0');
+      time.textContent = `${mm}:${ss}`;
+    });
+    ws.on('finish', () => {
+      playing = false;
+      btn.textContent = '▶️';
+      time.textContent = '00:00';
+    });
+
+    btn.addEventListener('click', () => {
+      // Pausa outros
+      wavePlayers.forEach((other, id) => {
+        if (id !== el.id) {
+          other.pause();
+          const oel = document.getElementById(id);
+          oel.querySelector('.play-btn').textContent = '▶️';
+          oel.querySelector('.audio-time').textContent = '00:00';
+        }
+      });
+      if (!playing) { ws.play(); btn.textContent = '⏸️'; }
+      else         { ws.pause(); btn.textContent = '▶️'; }
+      playing = !playing;
+    });
+  }
+
+  function appendMensagem(m, scrollIfNeeded) {
+    const cls = m.remetente_id == userId ? 'enviada' : 'recebida';
+    const ext = m.midia_url ? m.midia_url.slice(-4).toLowerCase() : '';
+    let html = '';
+
+    // 1) Áudio (gravado ou enviado)
+    if (m.audio_url || AUDIO_EXTS.includes(ext)) {
+      const src = m.audio_url || m.midia_url;
+      html += `
+        <div class="audio-player" data-src="${src}" id="audio-player-${m.id}">
+          <button class="play-btn" aria-label="Tocar/pausar áudio">▶️</button>
+          <div class="waveform"></div>
+          <span class="audio-time">00:00</span>
+        </div>`;
+    }
+    // 2) Imagem
+    else if (IMAGE_EXTS.includes(ext)) {
+      html += `<img src="${m.midia_url}" alt="Imagem enviada" />`;
+    }
+    // 3) Vídeo
+    else if (VIDEO_EXTS.includes(ext)) {
+      html += `<video controls>
+                 <source src="${m.midia_url}">
+                 Seu navegador não suporta vídeo.
+               </video>`;
+    }
+    // 4) Outro arquivo
+    else if (m.midia_url) {
+      html += `<a href="${m.midia_url}" download target="_blank" rel="noopener noreferrer">
+                 📄 ${m.midia_nome}
+               </a>`;
+    }
+
+    // Texto
+    if (m.conteudo) {
+      html += `<p>${m.conteudo}</p>`;
+    }
+
+    html += `<time>${m.timestamp.split(' ')[1].slice(0,5)}</time>`;
+
+    const div = document.createElement('div');
+    div.className = 'mensagem ' + cls;
+    div.innerHTML = html;
+    mensDiv.appendChild(div);
+
+    // Inicia o player se for áudio
+    const ap = div.querySelector('.audio-player');
+    if (ap) initAudioPlayer(ap);
+
+    lastMessageId = Math.max(lastMessageId, m.id);
+    if (scrollIfNeeded) mensDiv.scrollTop = mensDiv.scrollHeight;
+  }
+
+  async function fetchNovasMensagens() {
+    const atBottom = isAtBottom();
+    const res = await fetch(`/conversation/${convId}/messages/`);
+    if (!res.ok) return;
+    const { mensagens } = await res.json();
+    mensagens
+      .filter(m => m.id > lastMessageId)
+      .forEach(m => appendMensagem(m, atBottom));
+  }
+
+  async function sendData(payload, isJson = false) {
+    const opts = { method: 'POST', headers: { 'X-CSRFToken': csrftoken } };
+    if (isJson) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(payload);
+    } else {
+      opts.body = payload;
+    }
+    const res = await fetch(`/conversation/${convId}/send/`, opts);
+    if (!res.ok) console.error('Erro ao enviar', await res.text());
+  }
+
+  function tentarEnviar() {
+    const txt  = inpText.value.trim();
+    const file = inpMid.files[0];
+    if (file) {
+      const fd = new FormData();
+      fd.append('midia', file);
+      if (txt) fd.append('conteudo', txt);
+      sendData(fd);
+      inpMid.value = '';
+      inpText.value = '';
+    } else if (txt) {
+      sendData({ conteudo: txt }, true);
+      inpText.value = '';
+    }
+  }
+
+  btnSend.addEventListener('click', tentarEnviar);
+  inpText.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tentarEnviar();
+    }
+  });
+
+  btnRec.addEventListener('click', async () => {
+    if (!mediaRecorder) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(audioChunks, { type: 'audio/webm' });
+          const fd = new FormData();
+          fd.append('audio', blob, 'rec.webm');
+          const txt = inpText.value.trim();
+          if (txt) fd.append('conteudo', txt);
+          sendData(fd);
+          audioChunks = [];
+        };
+      } catch {
+        return alert('Permissão de microfone negada');
+      }
+    }
+    if (mediaRecorder.state === 'inactive') {
+      mediaRecorder.start();
+      btnRec.classList.add('recording');
+    } else {
+      mediaRecorder.stop();
+      btnRec.classList.remove('recording');
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const res = await fetch(`/conversation/${convId}/messages/`);
+    if (res.ok) {
+      const { mensagens } = await res.json();
+      mensagens.forEach(m => appendMensagem(m, true));
+    }
+    setInterval(fetchNovasMensagens, 2000);
+  });
+})();
+</script>
+
+</body>
+</html>

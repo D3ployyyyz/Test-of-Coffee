@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Clube - {{ clube.nome }}</title>
+  <style>
+    body {
+      background: #f9f9fc;
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 1300px;
+      color: #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .main-content {
+      flex: 1 1 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .club-container {
+      display: flex;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .club-image-box {
+      flex: 0 0 280px;
+      background: #eee;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .club-image-box img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .members-count {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .club-info-box {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 20px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .info-item strong {
+      display: block;
+      color: #666;
+      font-weight: normal;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .club-description {
+      background: #f3f3f3;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      margin-top: 20px;
+    }
+
+    .actions form, .actions a {
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    .actions button, .actions a {
+      padding: 8px 14px;
+      font-size: 14px;
+      border: none;
+      background: #333;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .actions button:hover, .actions a:hover {
+      background: #555;
+    }
+
+    .mural {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .mural h2 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      color: #444;
+    }
+
+    .mural-post {
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .mural-post:first-child {
+      border-top: none;
+    }
+
+    .mural-post strong {
+      color: #333;
+    }
+
+    .mural-post small {
+      display: block;
+      color: #999;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .sidebar {
+      flex: 0 0 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .forum-block {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .forum-block h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .forum-topic {
+      margin-bottom: 12px;
+    }
+
+    .forum-topic strong {
+      display: block;
+      color: #222;
+      margin-bottom: 2px;
+    }
+
+    .forum-topic small {
+      color: #999;
+    }
+
+    .chat-message {
+      padding: 6px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .chat-message:first-child {
+      border-top: none;
+    }
+
+    .chat-message span {
+      font-weight: bold;
+      color: #444;
+    }
+
+    .chat-message small {
+      color: #aaa;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    @media (max-width: 1150px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+{% if eventos %}
+  <div class="eventos">
+    <h3>📅 Próximos Eventos</h3>
+    {% for evento in eventos %}
+      <div class="evento">
+        {% if evento.banner %}
+          <img src="{{ evento.banner.url }}" alt="Banner do evento" style="width:100%; max-height:200px; object-fit:cover;">
+        {% endif %}
+        <h4>{{ evento.titulo }}</h4>
+        <p>{{ evento.descricao }}</p>
+        <small>De {{ evento.data_inicio|date:"d/m/Y H:i" }} até 
+               {% if evento.data_fim %}
+                   {{ evento.data_fim|date:"d/m/Y H:i" }}
+               {% else %}
+                   (sem data de término)
+               {% endif %}
+        </small>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+
+
+  <div class="main-content">
+    <!-- CLUBE HEADER -->
+    <div class="club-container">
+      <div class="club-image-box">
+        <img src="{{ clube.imagem }}" alt="{{ clube.nome }}" width="200" />
+        <div class="members-count">👥 {{ membros.count }} membros</div>
+      </div>
+
+      <div class="club-info-box">
+        <h1>☕ {{ clube.nome }}</h1>
+
+        <div class="info-grid">
+          <div class="info-item"><strong>Idioma</strong>{{ clube.idioma }}</div>
+          <div class="info-item"><strong>Categoria</strong>{{ clube.categoria }}</div>
+          <div class="info-item"><strong>Tipo</strong>{{ clube.tipo }}</div>
+          <div class="info-item"><strong>Criado em</strong>{{ clube.data|date:"d \d\e F \d\e Y" }}</div>
+          <div class="info-item"><strong>Dono</strong>{{ clube.dono }}</div>
+          <div class="info-item"><strong>Moderadores</strong>{{ moderadores|join:", " }}</div>
+        </div>
+
+        <div class="club-description">
+          {{ clube.descricao }}
+        </div>
+
+        <div class="actions">
+          {% if usuario_no_clube %}
+            <form method="post" action="{% url 'chat:clubes_sair' clube.pk %}">
+              {% csrf_token %}
+              <button type="submit">Sair do clube</button>
+            </form>
+          {% else %}
+            {% if clube.tipo == 'Pública' %}
+              <form method="post" action="{% url 'chat:clubes_entrar' clube.pk %}">{% csrf_token %}
+                <button type="submit">Entrar no clube</button>
+              </form>
+            {% elif clube.tipo == 'Privada' %}
+              {% if usuario_logado.nome in solicitantes %}
+                <p>Solicitação pendente.</p>
+              {% else %}
+                <form method="post" action="{% url 'chat:clubes_entrar' clube.pk %}">{% csrf_token %}
+                  <button type="submit">Solicitar entrada</button>
+                </form>
+              {% endif %}
+            {% else %}
+              <p>Clube fechado. Apenas por convite.</p>
+            {% endif %}
+          {% endif %}
+
+          {% if usuario_e_dono %}
+            <a href="{% url 'chat:clubes_editar' clube.pk %}">Editar clube</a>
+          {% endif %}
+
+          {% if usuario_logado.nome == clube.dono %}
+            <a href="{% url 'chat:criar_evento' clube.id %}" class="btn">Criar Evento</a>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- MURAL SIMBÓLICO -->
+    <div class="mural">
+      <h2>Mural de Recados</h2>
+
+      {% comment %}Aqui você pode iterar sobre recados reais{% endcomment %}
+      <div class="mural-post">
+        <strong>@ana:</strong> Acabei de testar um café com canela e gengibre. Recomendo!
+        <small>há 2 horas</small>
+      </div>
+      <div class="mural-post">
+        <strong>@gustavo:</strong> Café passado na hora é melhor que terapia.
+        <small>há 6 horas</small>
+      </div>
+      <div class="mural-post">
+        <strong>@marcela:</strong> Postei uma receita de cold brew no fórum 🍹
+        <small>ontem</small>
+      </div>
+    </div>
+
+    {% if usuario_e_dono and solicitacoes %}
+      <div class="mural" style="border-color: #007bff;">
+        <h2>📬 Solicitações de Entrada</h2>
+        <ul>
+          {% for s in solicitacoes %}
+            <li>
+              <strong>{{ s.usuario_nome }}</strong> — 
+              <form method="post" action="{% url 'chat:clubes_aprovar_solicitacao' clube.pk s.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Aceitar</button>
+              </form>
+              <form method="post" action="{% url 'chat:clubes_rejeitar_solicitacao' clube.pk s.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Rejeitar</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+
+    <!-- MEMBROS -->
+    <div class="mural">
+      <h2>Membros</h2>
+      <ul>
+        {% for membro in membros %}
+          <li>{{ membro.nome }}</li>
+        {% empty %}
+          <li>Nenhum membro ainda.</li>
+        {% endfor %}
+      </ul>
+      <a href="{% url 'chat:clubes_lista' %}">← Voltar à lista de clubes</a>
+    </div>
+  </div>
+
+  <!-- LATERAL -->
+  <div class="sidebar">
+    <div class="forum-block">
+      <h3>🧵 Discussões</h3>
+
+      <!-- Formulário para nova discussão -->
+      {% if usuario_no_clube %}
+      <form method="post" enctype="multipart/form-data" action="{% url 'chat:clube_nova_discussao' clube.pk %}" style="margin-bottom: 20px;">
+        {% csrf_token %}
+        <input type="text" name="titulo" required placeholder="Título do tópico" />
+        <textarea name="conteudo" required placeholder="Conteúdo do tópico"></textarea>
+        <label>Arquivo de mídia (imagem, vídeo, áudio):</label>
+        <input type="file" name="arquivo_midia" />
+        <button type="submit">Enviar</button>
+      </form>
+      {% endif %}
+
+      <!-- Lista de discussões -->
+      {% for topico in topicos %}
+      <div class="forum-topic">
+        <a href="{% url 'chat:clube_topico' clube.pk topico.pk %}" style="text-decoration: none; color: inherit;">
+          <strong>{{ topico.titulo }}</strong>
+          <small>{{ topico.respostas.count }} respostas • iniciado por @{{ topico.autor }}</small>
+        </a>
+      </div>
+      {% empty %}
+      <p>Seja o primeiro a iniciar uma discussão neste clube.</p>
+      {% endfor %}
+
+      <div class="forum-block">
+        <h3>💬 Salas de Bate-Papo</h3>
+
+        {% for sala in clube.salas.all %}
+          <div class="chat-message">
+            <a href="{% url 'chat:sala_detalhe' sala.id %}" style="text-decoration: none;">
+              #{{ sala.nome }}
+            </a>
+          </div>
+        {% empty %}
+          <p>Nenhuma sala criada.</p>
+        {% endfor %}
+
+        <!-- Formulário para criar nova sala -->
+        <form method="post" action="{% url 'chat:criar_sala' clube.id %}">
+          {% csrf_token %}
+          <input type="text" name="nome" placeholder="Nova sala" required />
+          <button type="submit">Criar</button>
+        </form>
+      </div>
+
+
+
+</body>
+</html>

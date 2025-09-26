@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ topico.titulo }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+        body { font-family: Arial, sans-serif; background: #f3f3f3; margin: 0; padding: 20px; }
+        .container { background: #fff; max-width: 800px; margin: auto; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .autor { font-size: 0.9rem; color: #555; margin-bottom: 1rem; }
+        .conteudo { font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; }
+        .comentarios { margin-top: 2rem; }
+        .resposta { border-top: 1px solid #ddd; padding: 1rem 0; }
+        .resposta p { margin: 0 0 0.5rem; }
+        .resposta small { color: #888; font-size: 0.8rem; }
+        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; }
+        button { margin-top: 10px; padding: 8px 16px; background: #0069d9; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0053ba; }
+
+        /* Botão de toggle */
+        .toggle-btn {
+            background: #555;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+            border: none;
+            margin-bottom: 6px;
+        }
+        .toggle-btn:hover {
+            background: #333;
+        }
+        /* Esconde inicialmente os filhos e form */
+        .filhos-container {
+            margin-left: 30px;
+            border-left: 2px solid #eee;
+            padding-left: 10px;
+            display: block; /* ou none para iniciar escondido */
+        }
+        .filhos-container.escondido {
+            display: none;
+        }
+        .form-resposta {
+            margin-top: 10px;
+        }
+        .form-resposta.escondido {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ topico.titulo }}</h1>
+        <div class="autor">
+            por {{ topico.autor }} em {{ topico.criado_em|date:"d/m/Y H:i" }}
+            {% if usuario_logado and usuario_logado.id == topico.autor.id %}
+                <strong>(Você é o autor)</strong>
+            {% endif %}
+        </div>
+
+        <div class="conteudo">
+            {{ topico.conteudo|linebreaks }}
+        </div>
+
+        {% if topico.arquivo_midia %}
+            <div class="midia-topico" style="margin-bottom: 1.5rem;">
+                {% with nome=topico.arquivo_midia.name|lower %}
+                    {% if nome|slice:"-4:" == ".jpg" or nome|slice:"-5:" == ".jpeg" or nome|slice:"-4:" == ".png" or nome|slice:"-4:" == ".gif" %}
+                        <img src="{{ topico.arquivo_midia.url }}" alt="Imagem do tópico" style="max-width: 100%; border-radius: 6px;" />
+                    {% elif nome|slice:"-4:" == ".mp4" or nome|slice:"-5:" == ".webm" %}
+                        <video controls style="max-width: 100%; border-radius: 6px;">
+                            <source src="{{ topico.arquivo_midia.url }}" type="video/mp4" />
+                            Seu navegador não suporta vídeo.
+                        </video>
+                    {% elif nome|slice:"-4:" == ".mp3" or nome|slice:"-4:" == ".wav" %}
+                        <audio controls style="width: 100%;">
+                            <source src="{{ topico.arquivo_midia.url }}" type="audio/mpeg" />
+                            Seu navegador não suporta áudio.
+                        </audio>
+                    {% else %}
+                        <a href="{{ topico.arquivo_midia.url }}" target="_blank" style="color: #0069d9; text-decoration: underline;">
+                            Baixar arquivo anexado
+                        </a>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        {% endif %}
+
+
+        <div class="comentarios">
+
+            {% for resposta in respostas_organizadas %}
+            <div class="resposta" style="margin-left: 0px;">
+                <p>{{ resposta.conteudo|linebreaks }}</p>
+                <small>por @{{ resposta.autor }} em {{ resposta.criado_em|date:"d/m/Y H:i" }}</small>
+
+                {% if resposta.filhos %}
+                <button class="toggle-btn" type="button" aria-expanded="true">
+                    Ocultar respostas e responder
+                </button>
+                {% endif %}
+
+                {% if usuario_no_clube %}
+                <form method="post" action="" class="form-resposta">
+                    {% csrf_token %}
+                    <input type="hidden" name="resposta_pai_id" value="{{ resposta.id }}">
+                    <textarea name="comentario" rows="2" placeholder="Responder..."></textarea>
+                    <button type="submit">Responder</button>
+                </form>
+                {% endif %}
+
+                {% if resposta.filhos %}
+                <div class="filhos-container">
+                    {% for filho1 in resposta.filhos %}
+                    <div class="resposta" style="margin-left: 0;">
+                        <p>{{ filho1.conteudo|linebreaks }}</p>
+                        <small>por @{{ filho1.autor }} em {{ filho1.criado_em|date:"d/m/Y H:i" }}</small>
+
+                        {% if filho1.filhos %}
+                        <button class="toggle-btn" type="button" aria-expanded="true">
+                            Ocultar respostas e responder
+                        </button>
+                        {% endif %}
+
+                        {% if usuario_no_clube %}
+                        <form method="post" action="" class="form-resposta">
+                            {% csrf_token %}
+                            <input type="hidden" name="resposta_pai_id" value="{{ filho1.id }}">
+                            <textarea name="comentario" rows="2" placeholder="Responder..."></textarea>
+                            <button type="submit">Responder</button>
+                        </form>
+                        {% endif %}
+
+                        {% if filho1.filhos %}
+                        <div class="filhos-container">
+                            {% for filho2 in filho1.filhos %}
+                            <div class="resposta" style="margin-left: 0;">
+                                <p>{{ filho2.conteudo|linebreaks }}</p>
+                                <small>por @{{ filho2.autor }} em {{ filho2.criado_em|date:"d/m/Y H:i" }}</small>
+
+                                {% if usuario_no_clube %}
+                                <form method="post" action="" class="form-resposta">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="resposta_pai_id" value="{{ filho2.id }}">
+                                    <textarea name="comentario" rows="2" placeholder="Responder..."></textarea>
+                                    <button type="submit">Responder</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Nenhuma resposta ainda.</p>
+            {% endfor %}
+
+            {% if usuario_no_clube %}
+            <form id="resposta-form" method="post" action="{% url 'chat:clube_topico' clube.id topico.id %}">
+                {% csrf_token %}
+                <textarea name="comentario" id="comentario" placeholder="Digite sua resposta..." required></textarea>
+                <button type="submit">Enviar resposta</button>
+            </form>
+            {% else %}
+            <p>Você precisa fazer parte do clube para responder.</p>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle botão para mostrar/esconder respostas-filhas e formulário
+            document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    // Próximo irmão do botão é o form, o próximo depois do form é .filhos-container
+                    const form = btn.nextElementSibling;
+                    const filhos = form ? form.nextElementSibling : null;
+
+                    const estahAberto = btn.getAttribute('aria-expanded') === 'true';
+
+                    if (form) {
+                        if (estahAberto) {
+                            form.classList.add('escondido');
+                        } else {
+                            form.classList.remove('escondido');
+                        }
+                    }
+                    if (filhos) {
+                        if (estahAberto) {
+                            filhos.classList.add('escondido');
+                        } else {
+                            filhos.classList.remove('escondido');
+                        }
+                    }
+
+                    btn.setAttribute('aria-expanded', (!estahAberto).toString());
+                    btn.textContent = estahAberto
+                        ? 'Mostrar respostas e responder'
+                        : 'Ocultar respostas e responder';
+                });
+            });
+
+            // Validação do formulário principal
+            const form = document.getElementById('resposta-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const textarea = form.querySelector('textarea[name="comentario"]');
+                    if (textarea && !textarea.value.trim()) {
+                        alert('Por favor, digite sua resposta antes de enviar.');
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

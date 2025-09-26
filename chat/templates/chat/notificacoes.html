@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Notificações & Mensagens</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --azul-escuro: #006076;
+      --azul-vivo:   #007f87;
+      --bege:        #ebccb0;
+      --rosa:        #bd75a1;
+      --roxo:        #7a5677;
+      --fundo:       #faf6f0;
+      --card:        #ffffff;
+      --sombra:      rgba(0, 0, 0, 0.12);
+
+      --radius:      12px;
+      --gap:         16px;
+      --transition:  0.25s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      background: var(--fundo);
+      color: var(--roxo);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      position: sticky; top: 0;
+      background: var(--card);
+      border-bottom: 1px solid var(--bege);
+      padding: 0 var(--gap);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px var(--sombra);
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 24px;
+      color: var(--azul-escuro);
+    }
+    header .icons {
+      display: flex;
+      gap: var(--gap);
+    }
+    header svg {
+      width: 24px; height: 24px;
+      fill: var(--roxo);
+      cursor: pointer;
+      transition: fill var(--transition);
+    }
+    header svg:hover { fill: var(--azul-vivo); }
+
+    main {
+      flex: 1;
+      padding: var(--gap);
+      max-width: 1000px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px var(--sombra);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .card-header {
+      background: var(--azul-vivo);
+      color: #fff;
+      padding: var(--gap);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header h2 {
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: var(--rosa);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      overflow-y: auto;
+      max-height: 400px;
+      padding: var(--gap);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      gap: var(--gap);
+      padding: var(--gap);
+      border-radius: var(--radius);
+      background: #fafafa;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .item:hover {
+      background: #fff;
+      transform: translateX(4px);
+    }
+    .item.nao-visto {
+      border-left: 4px solid var(--azul-vivo);
+      background: #e8f7fa;
+    }
+
+    .item img {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 2px solid var(--rosa);
+      padding: 2px;
+      transition: transform var(--transition);
+    }
+    .item img:hover { transform: scale(1.1); }
+
+    .info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .info .name {
+      font-weight: 600;
+      color: var(--azul-escuro);
+      font-size: 16px;
+    }
+    .info .text {
+      font-size: 14px;
+      color: var(--roxo);
+    }
+    .info .time {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .actions button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .actions .accept {
+      background: var(--azul-vivo);
+      color: #fff;
+    }
+    .actions .reject {
+      background: var(--rosa);
+      color: #fff;
+    }
+    .actions button:hover { transform: translateY(-2px); }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      font-style: italic;
+      padding: 40px 0;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Éxodos</h1>
+    <div class="icons">
+      <!-- Notificação SVG -->
+      <svg viewBox="0 0 24 24"><path d="M12 24a2.999 2.999 0 0 0 3-3H9a3 3 0 0 0 3 3zm6-7V11c0-3.072-1.641-5.657-4.5-6.32V4a1.5 1.5 0 1 0-3 0v.68C7.64 5.343 6 7.928 6 11v6l-2 2v1h16v-1l-2-2z"/></svg>
+      <!-- Mensagem SVG -->
+      <svg viewBox="0 0 24 24"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2h15A2.5 2.5 0 0 1 22 4.5v15a.5.5 0 0 1-.79.407L15 14H4.5A2.5 2.5 0 0 1 2 11.5v-7z"/></svg>
+      <!-- Perfil SVG -->
+      <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- NOTIFICAÇÕES -->
+    <section class="card">
+      <div class="card-header">
+        <h2>🔔 Notificações</h2>
+        <div class="badge">{{ solicitacoes_clubes|length }}</div>
+      </div>
+      <div class="card-body">
+        {% for s in solicitacoes_clubes %}
+          <div class="item">
+            <img src="{{ s.foto_url|default:'https://i.pravatar.cc/150?u='|add:s.usuario_nome }}" alt="">
+            <div class="info">
+              <div class="name">{{ s.usuario_nome }}</div>
+              <div class="text">quer entrar em <strong>{{ s.clube.nome }}</strong></div>
+            </div>
+            <div class="actions">
+              <button class="accept">✔︎</button>
+              <button class="reject">✕</button>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty">Nenhuma nova solicitação</div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- MENSAGENS -->
+    <section class="card">
+      <div class="card-header">
+        <h2>💬 Mensagens</h2>
+        <div class="badge">{{ conversas|length }}</div>
+      </div>
+      <div class="card-body">
+        {% for item in conversas %}
+          <a href="{% url 'chat:conversation' item.conversa.id %}">
+            <div class="item {% if item.nao_visto %}nao-visto{% endif %}">
+              <img src="{{ item.amigo.foto|default:'https://i.pravatar.cc/150?u='|add:item.amigo.nome }}" alt="">
+              <div class="info">
+                <div class="name">{{ item.amigo.nome }}</div>
+                <div class="text">{{ item.conversa.mensagens.last.conteudo|default:"(mídia ou áudio)"|truncatechars:50 }}</div>
+                <div class="time">{{ item.conversa.mensagens.last.timestamp|date:"d/m/Y H:i" }}</div>
+              </div>
+            </div>
+          </a>
+        {% empty %}
+          <div class="empty">Sem mensagens recentes</div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

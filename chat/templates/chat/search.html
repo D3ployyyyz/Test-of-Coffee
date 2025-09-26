@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lista de Usuários</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --marrom-escuro: #5d4037;
+      --marrom-claro: #6b4f3f;
+      --roxinho:      #8c73a5;
+      --fundo:        #fefcf8;
+      --dica-bg:      rgba(189,117,161,0.05);
+      --dica-border:  #bd75a1;
+      --gap:          1.5rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--fundo);
+      padding: var(--gap);
+      color: var(--marrom-escuro);
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    /* container da dica */
+    #random-tip {
+      background: var(--dica-bg);
+      border-left: 4px solid var(--dica-border);
+      padding: 1rem;
+      margin-bottom: var(--gap);
+      font-style: italic;
+      color: var(--roxinho);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    #random-tip span {
+      display: inline-block;
+      /* animation e delay serão injetados inline */
+    }
+
+    /* ANIMAÇÕES DISPONÍVEIS */
+    @keyframes wave {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-6px); }
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      30%     { transform: translateY(-12px); }
+      60%     { transform: translateY(-6px); }
+    }
+    @keyframes fade {
+      0%,100% { opacity: 1; }
+       50%     { opacity: 0.3; }
+    }
+    @keyframes tilt {
+      0%,100% { transform: rotate(0deg); }
+      25%     { transform: rotate(3deg); }
+      75%     { transform: rotate(-3deg); }
+    }
+
+    ul { list-style: none; padding-left: 0; }
+    li { margin-bottom: 0.7rem; }
+
+    a {
+      text-decoration: none;
+      color: var(--marrom-claro);
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+    a:hover {
+      color: var(--roxinho);
+    }
+  </style>
+</head>
+<body>
+  <h1>Usuários cadastrados</h1>
+
+  <!-- Dica com efeitos aleatórios -->
+  <div id="random-tip">Carregando dica...</div>
+
+  <ul>
+    {% for user in usuarios %}
+      <li>
+        <a href="{% url 'chat:perfil_usuario' user.id %}">
+          {{ user.nome }}
+        </a>
+      </li>
+    {% empty %}
+      <li>Nenhum usuário cadastrado.</li>
+    {% endfor %}
+  </ul>
+
+  <script>
+    (function(){
+      const tips = [
+        "Você sabia que pode usar /help para ver todos os seus comandos?",
+        "Mantenha suas conversas organizadas usando salas separadas.",
+        "Clique no avatar para editar o seu perfil rapidamente.",
+        "Explore novos clubes e faça amizades!",
+        "Ative as notificações para não perder nenhuma mensagem.",
+        "Use emojis 😊 para deixar o chat mais divertido.",
+        "Personalize sua foto de perfil para se destacar.",
+        "Dica: seja gentil com outros usuários!",
+        "Você pode filtrar mensagens por data no chat.",
+        "Experimente enviar um GIF para animar a conversa."
+      ];
+
+      const effects = [
+        { name: 'wave',    duration: 1.2 },
+        { name: 'bounce',  duration: 1.4 },
+        { name: 'fade',    duration: 1.6 },
+        { name: 'tilt',    duration: 1.2 }
+      ];
+
+      const tipElem = document.getElementById('random-tip');
+
+      function showRandomTip() {
+        // escolhe dica e efeito
+        const text = tips[Math.floor(Math.random()*tips.length)];
+        const fx   = effects[Math.floor(Math.random()*effects.length)];
+        // converte em spans, com delay por letra
+        const letters = text.split('');
+        const html = letters.map((ch, i) => {
+          const delay = (i * 0.05).toFixed(2) + 's';
+          return `<span style="
+            animation: ${fx.name} ${fx.duration}s ease-in-out infinite;
+            animation-delay: ${delay};
+          ">${ch}</span>`;
+        }).join('');
+        tipElem.innerHTML = html;
+      }
+
+      // inicializa e refaz a cada 15s
+      showRandomTip();
+      setInterval(showRandomTip, 15000);
+    })();
+  </script>
+</body>
+</html>

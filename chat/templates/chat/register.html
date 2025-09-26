@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ece9e6, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .link a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Crie sua conta</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" placeholder="Seu nome completo" required>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="email@exemplo.com" required>
+
+      <label for="telefone">Telefone</label>
+      <input id="telefone" name="telefone" placeholder="(xx) xxxxx-xxxx">
+
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" placeholder="Crie uma senha segura" required>
+
+      <button type="submit">Registrar</button>
+    </form>
+
+    <div class="link">
+      Já tem uma conta? <a href="{% url 'chat:login' %}">Entrar</a>
+
+    </div>
+  </div>
+
+</body>
+</html>

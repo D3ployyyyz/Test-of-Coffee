@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Editar Perfil - TANOTO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #f5f8fa;
+      font-family: 'VT323', monospace;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type=text], input[type=url], textarea {
+      width: 100%;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      padding: 6px 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      resize: vertical;
+    }
+    input[type=file] {
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 25px;
+      background: #007bff;
+      border: none;
+      color: white;
+      padding: 10px 16px;
+      font-size: 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .flex-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+    }
+    .flex-row > * {
+      flex: 1;
+    }
+    .social-row, .like-row {
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .item-list {
+      margin-top: 5px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #eee;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .item-list span {
+      flex: 1;
+      word-break: break-word;
+    }
+    .btn-remove {
+      background: #dc3545;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 0 8px;
+      margin-left: 10px;
+      height: 24px;
+      line-height: 22px;
+    }
+    .btn-add {
+      margin-top: 8px;
+      background: #28a745;
+      font-weight: bold;
+    }
+    #preview-img {
+      margin-top: 10px;
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Editar Perfil</h1>
+  <form id="form-edit">
+
+    <label for="pic">Foto de Perfil (upload do PC)</label>
+    <input type="file" id="pic" accept="image/*" />
+    <img id="preview-img" src="{{ usuario.foto|default:'' }}" alt="Preview da foto" />
+
+    <label for="emotion">Emoji de Emoção</label>
+    <input type="text" id="emotion" maxlength="2" placeholder="Ex: 😊" value="{{ usuario.emoji|default:'' }}" required />
+
+    <label for="name">Nome</label>
+    <input type="text" id="name" maxlength="20" value="{{ usuario.nome|default:'' }}" required />
+
+    <label for="description">Descrição</label>
+    <textarea id="description" rows="3" maxlength="140" placeholder="Sobre você...">{{ usuario.descricao|default:'' }}</textarea>
+
+<label for="location">Localização</label>
+<input type="text" id="location" autocomplete="off" placeholder="Digite sua cidade" />
+<ul id="location-suggestions" style="
+  position:absolute;
+  border:1px solid #ccc;
+  background:#fff;
+  z-index:10000;
+  max-height:150px;
+  overflow-y:auto;
+  width:300px;
+  font-family:'VT323',monospace;
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:none;
+"></ul>
+
+<script>
+const API_KEY = 'pk.14e92af9b1c50533736db87a9ca3dad2';
+const input = document.getElementById('location');
+const list = document.getElementById('location-suggestions');
+
+let suggestions = [];
+let timer = null;
+
+// Converte código de país em emoji 🇧🇷
+function getFlagEmoji(countryCode) {
+    if (!countryCode) return '';
+    return String.fromCodePoint(...countryCode.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
+}
+
+// Mostra lista de sugestões
+function showSuggestions(items) {
+    list.innerHTML = '';
+    items.forEach(item => {
+        const addr = item.address;
+        const city = addr.name || addr.city || addr.town || addr.village;
+        const state = addr.state || addr.county || '';
+        const countryCode = addr.country_code?.toUpperCase() || '';
+        if (!city) return;
+
+        const flagEmoji = getFlagEmoji(countryCode);
+        const display = `${flagEmoji} ${city} – ${state || addr.country}`;
+
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.alignItems = 'center';
+        li.style.gap = '8px';
+        li.style.padding = '6px 10px';
+        li.style.cursor = 'pointer';
+
+        const span = document.createElement('span');
+        span.textContent = display;
+        li.appendChild(span);
+
+        li.addEventListener('click', () => {
+            input.value = display; // emoji + cidade/estado
+            list.style.display = 'none';
+        });
+
+        list.appendChild(li);
+    });
+
+    if (list.childElementCount) {
+        const rect = input.getBoundingClientRect();
+        list.style.top = `${rect.bottom + window.scrollY}px`;
+        list.style.left = `${rect.left + window.scrollX}px`;
+        list.style.width = `${rect.width}px`;
+        list.style.display = 'block';
+    } else {
+        list.style.display = 'none';
+    }
+}
+
+// Busca sugestões enquanto digita
+input.addEventListener('input', () => {
+    const q = input.value.trim();
+    if (timer) clearTimeout(timer);
+
+    if (!q) {
+        list.style.display = 'none';
+        return;
+    }
+
+    timer = setTimeout(async () => {
+        const lang = navigator.language || 'pt';
+        const url = `https://us1.locationiq.com/v1/autocomplete.php?key=${API_KEY}&q=${encodeURIComponent(q)}&format=json&limit=7&normalizecity=1&accept-language=${lang}`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            suggestions = data;
+            showSuggestions(data);
+        } catch (err) {
+            console.error('Erro ao buscar cidades:', err);
+            list.style.display = 'none';
+        }
+    }, 300);
+});
+
+// Clique fora: completa com a primeira sugestão, incluindo o emoji
+document.addEventListener('click', e => {
+    if (!list.contains(e.target) && e.target !== input) {
+        if (input.value.trim() && suggestions.length > 0) {
+            const addr = suggestions[0].address;
+            const city = addr.name || addr.city || addr.town || addr.village;
+            const state = addr.state || addr.county || '';
+            const countryCode = addr.country_code?.toUpperCase() || '';
+            const flagEmoji = getFlagEmoji(countryCode);
+
+            if (city) {
+                input.value = `${flagEmoji} ${city} – ${state || addr.country}`;
+            }
+        }
+        list.style.display = 'none';
+    }
+});
+</script>
+
+
+
+
+    <!-- Gostos -->
+    <label>Gostos</label>
+    <div id="likes-list">
+      {% for gosto in usuario.gostos %}
+        <div class="item-list"><span>{{ gosto }}</span><button class="btn-remove" onclick="this.parentElement.remove(); return false;">×</button></div>
+      {% endfor %}
+    </div>
+    <div class="flex-row">
+      <input type="text" id="new-like" placeholder="Adicionar novo gosto" maxlength="20" />
+      <button type="button" id="btn-add-like" class="btn-add">Adicionar</button>
+    </div>
+
+    <!-- Redes sociais -->
+    <label>Redes Sociais (cole apenas o link)</label>
+    <div id="socials-list">
+      {% for social in usuario.redes_sociais %}
+        <div class="item-list" data-url="{{ social.url }}"><span>{{ social.url }}</span><button class="btn-remove" onclick="this.parentElement.remove(); return false;">×</button></div>
+      {% endfor %}
+    </div>
+
+    <div class="social-row">
+      <input type="url" id="social-url" placeholder="URL da rede social" />
+      <button type="button" id="btn-add-social" class="btn-add">Adicionar rede social</button>
+    </div>
+
+    <label for="playlistUrl">URL da playlist Spotify</label>
+    <input type="url" id="playlistUrl" placeholder="Ex: https://open.spotify.com/playlist/xxxxxxxx" value="{{ usuario.playlist|default:'' }}" />
+
+    <button type="submit">Salvar Perfil</button>
+  </form>
+
+<script>
+  function createItem(text, removeHandler) {
+    const div = document.createElement('div');
+    div.className = 'item-list';
+
+    const span = document.createElement('span');
+    span.textContent = text;
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-remove';
+    btn.textContent = '×';
+    btn.title = 'Remover';
+    btn.onclick = () => removeHandler(div);
+
+    div.appendChild(span);
+    div.appendChild(btn);
+
+    return div;
+  }
+
+  function createLikeItem(text) {
+    return createItem(text, (div) => div.remove());
+  }
+
+  function createSocialItem(url) {
+    const div = createItem(url, (div) => div.remove());
+    div.dataset.url = url;
+    return div;
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(e);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  let currentPicBase64 = document.getElementById('preview-img').src;
+
+  document.getElementById('pic').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (file) {
+      currentPicBase64 = await readFileAsDataURL(file);
+      document.getElementById('preview-img').src = currentPicBase64;
+    }
+  });
+
+  document.getElementById('btn-add-like').onclick = () => {
+    const input = document.getElementById('new-like');
+    const val = input.value.trim();
+    if (val) {
+      document.getElementById('likes-list').appendChild(createLikeItem(val));
+      input.value = '';
+    }
+  };
+
+  document.getElementById('btn-add-social').onclick = () => {
+    const input = document.getElementById('social-url');
+    const val = input.value.trim();
+    if (val) {
+      document.getElementById('socials-list').appendChild(createSocialItem(val));
+      input.value = '';
+    }
+  };
+
+  document.getElementById('form-edit').onsubmit = async e => {
+    e.preventDefault();
+
+    const likes = [...document.querySelectorAll('#likes-list .item-list span')].map(span => span.textContent);
+    const socials = [...document.querySelectorAll('#socials-list .item-list')].map(div => ({ url: div.dataset.url }));
+
+    const profileData = {
+      pic: currentPicBase64,
+      emotion: document.getElementById('emotion').value.trim(),
+      name: document.getElementById('name').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      location: document.getElementById('location').value.trim(),
+      likes,
+      socials,
+      playlistUrl: document.getElementById('playlistUrl').value.trim()
+    };
+
+    try {
+      const response = await fetch("{% url 'chat:editar_perfil' %}", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      });
+
+      if (response.ok) {
+        alert("Perfil salvo!");
+        window.location.href = "{% url 'chat:profile' %}";
+      } else {
+        const err = await response.json();
+        alert("Erro ao salvar: " + (err.erro || "Erro desconhecido"));
+      }
+
+    } catch (error) {
+      alert("Erro na requisição: " + error.message);
+    }
+  };
+</script>
+
+</body>
+</html>

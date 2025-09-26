@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sala: {{ sala.nome }}</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f3f3f3;
+    }
+
+    #chat-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      height: 400px;
+      overflow-y: scroll;
+      background: #fff;
+      margin-bottom: 15px;
+      border-radius: 8px;
+    }
+
+    .mensagem {
+      margin-bottom: 10px;
+    }
+
+    .mensagem span {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .mensagem small {
+      color: #999;
+      font-size: 11px;
+      margin-left: 5px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      background: #333;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>💬 Sala: {{ sala.nome }}</h2>
+
+  <div id="chat-box">
+    {% for msg in mensagens %}
+      <div class="mensagem">
+        <span>{{ msg.autor }}</span>: {{ msg.texto }}
+        <small>{{ msg.criado_em|time:"H:i" }}</small>
+      </div>
+    {% endfor %}
+  </div>
+
+  <form id="chat-form">
+    <input type="hidden" id="autor" value="{{ usuario.nome }}">
+    <input type="text" id="mensagem" placeholder="Digite sua mensagem..." autocomplete="off" />
+    <button type="submit">Enviar</button>
+  </form>
+
+<script>
+  const chatBox = document.getElementById("chat-box");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("mensagem");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const autor = document.getElementById("autor").value;
+    const texto = input.value;
+
+    if (texto.trim() === "") return;
+
+    fetch("{% url 'chat:enviar_mensagem' sala.id %}", {
+      method: "POST",
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ autor, texto })
+    })
+    .then(res => res.json())
+    .then(data => {
+      input.value = "";
+      atualizarChat(); // força atualização imediata
+    });
+  });
+
+  function atualizarChat() {
+    fetch(window.location.href, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(res => res.text())
+    .then(html => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const novoChatBox = doc.getElementById("chat-box");
+      if (novoChatBox) {
+        chatBox.innerHTML = novoChatBox.innerHTML;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    });
+  }
+
+  // Atualiza a cada 3 segundos
+  setInterval(atualizarChat, 1000);
+</script>
+
+</body>
+</html>

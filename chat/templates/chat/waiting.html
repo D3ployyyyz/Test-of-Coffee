@@ -1,0 +1,987 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Procurando...</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Indie+Flower&display=swap" rel="stylesheet" />
+<!-- SIDEBAR ATUALIZADA: novos ícones minimalistas + botão cresce no hover -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'chat/style_.css' %}">
+  <link rel="stylesheet" href="{% static 'chat/_base.css' %}">
+
+<style>
+:root{
+  --sidebar-w: 84px;
+  --item-size: 56px;
+  --expanded-w: 220px;
+  --transition: 300ms cubic-bezier(.2,.9,.25,1);
+  --shadow-sm: 0 4px 12px rgba(15,15,20,0.06);
+  --shadow-lg: 0 12px 28px rgba(15,15,20,0.14);
+  --icon-stroke: 1.6;
+  --hover-scale: 1.12;
+}
+
+/* container */
+.lofi-sidebar {
+  position: fixed; top: 0; left: 0;
+  width: var(--sidebar-w); height: 100vh;
+  padding-top: 3.8rem;
+  background: rgba(140,115,165,0.06);
+  backdrop-filter: blur(6px);
+  border-right: 1px solid rgba(226,207,195,0.55);
+  box-shadow: 2px 0 14px rgba(0,0,0,0.03);
+  z-index: 99;
+}
+
+/* centralizar lista */
+.lofi-sidebar nav ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display:flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+/* item */
+.lofi-sidebar nav ul li{
+  width: calc(var(--item-size));
+  height: var(--item-size);
+  position: relative;
+  --bg: #efe;
+  --text: #5a426d;
+  --icon: rgba(0,0,0,0.6);
+}
+
+/* link (botão) */
+.lofi-sidebar nav ul li a{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: var(--item-size);
+  height: var(--item-size);
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition:
+    width var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition),
+    background var(--transition);
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  justify-content: flex-start;
+  transform-origin: left center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* inner: alinhamento do conteúdo */
+.lofi-sidebar nav ul li a .inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: var(--item-size);
+  height: var(--item-size);
+  box-sizing: border-box;
+}
+
+/* ícone */
+.lofi-sidebar nav ul li a svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  stroke: var(--icon);
+  stroke-width: var(--icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+/* label dentro da mesma bolinha/pill */
+.lofi-sidebar nav ul li a .label {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 220ms ease, transform 240ms ease;
+  color: var(--text);
+  pointer-events: none;
+}
+
+/* HOVER / FOCUS: expande e aumenta o botão */
+.lofi-sidebar nav ul li a:hover,
+.lofi-sidebar nav ul li a:focus {
+  width: var(--expanded-w);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(8px) scale(var(--hover-scale));
+}
+.lofi-sidebar nav ul li a:hover .label,
+.lofi-sidebar nav ul li a:focus .label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* foco acessível */
+.lofi-sidebar nav ul li a:focus {
+  outline: 3px solid rgba(90,66,109,0.12);
+  outline-offset: 4px;
+}
+
+/* cores por item */
+.lofi-sidebar nav ul li:nth-child(1) { --bg: #FCE7EA; --text: #7B3A47; --icon: rgba(123,58,71,0.95);} /* rosa */
+.lofi-sidebar nav ul li:nth-child(2) { --bg: #E8F3FF; --text: #1F506F; --icon: rgba(31,80,111,0.95);} /* azul */
+.lofi-sidebar nav ul li:nth-child(3) { --bg: #FFF6D9; --text: #7A5B1C; --icon: rgba(122,91,28,0.95);} /* amarelo */
+.lofi-sidebar nav ul li:nth-child(4) { --bg: #DFF9EC; --text: #1D6C46; --icon: rgba(29,108,70,0.95);} /* menta */
+.lofi-sidebar nav ul li:nth-child(5) { --bg: #FFF0E0; --text: #8A4F29; --icon: rgba(138,79,41,0.95);} /* pêssego */
+.lofi-sidebar nav ul li:nth-child(6) { --bg: #F0EAFF; --text: #51366A; --icon: rgba(81,54,106,0.95);} /* lilás */
+
+/* main offset */
+body main {
+  margin-left: var(--sidebar-w);
+  transition: margin-left 220ms ease;
+}
+
+/* responsividade */
+@media (max-width:520px){
+  :root{ --item-size: 48px; --sidebar-w: 68px; --expanded-w: 160px; --icon-stroke:1.4; --hover-scale:1.08; }
+  .lofi-sidebar{ width: var(--sidebar-w); padding-top:3.2rem; }
+  body main { margin-left: var(--sidebar-w); }
+}
+
+
+:root{
+  --gap:16px;
+  --btn-d:50px;                 /* menor diâmetro */
+  --expanded-w:200px;           /* largura final do pill */
+  --pill-radius:999px;
+  --glass-blur:12px;
+  --trans-fast:220ms cubic-bezier(.2,.9,.25,1);
+  --trans-mid:360ms cubic-bezier(.2,1.05,.25,1); /* leve overshoot */
+  --shadow: 0 8px 26px rgba(12,12,14,0.06);
+  --shadow-strong: 0 18px 48px rgba(12,12,14,0.10);
+  --label-font: "Rubik", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  --label-color: #5b4750;
+  --splash: rgba(255,255,255,0.14);
+}
+
+
+/* container glass */
+.glass-nav{
+  position:fixed;
+  left:var(--gap);
+  top:var(--gap);
+  width:84px;
+  height: calc(100vh - calc(var(--gap) * 2));
+  padding: 20px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06));
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: var(--shadow);
+  display:flex; align-items:flex-start;
+  z-index:1000;
+}
+
+.glass-nav ul {
+  margin-top: 35px; /* distância da nav até os botões */
+}
+
+/* nav list */
+nav{ width:100%; display:flex; flex-direction:column; gap:12px; align-items:center; }
+ul{ list-style:none; padding:0; margin:0; width:100%; display:flex; flex-direction:column; gap:10px; align-items:center; }
+
+/* item container */
+.nav-item{ width:100%; display:flex; justify-content:center; align-items:center; position:relative; }
+
+/* button outer - keeps compact */
+.nav-btn{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  padding:0;
+  border-radius: var(--pill-radius);
+  border: none;
+  background: transparent;
+  cursor:pointer;
+  position:relative;
+  display:block;
+  transition: transform var(--trans-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the dot element (icon holder) */
+.dot{
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  z-index:4;
+  pointer-events:none;
+}
+
+/* expanding background behind the dot — use scaleX for smooth expansion */
+.dot::before{
+  content:"";
+  position:absolute;
+  left:0; top:0;
+  width: var(--btn-d);
+  height: var(--btn-d);
+  border-radius:50%;
+  background: var(--tint, rgba(255,255,255,0.04));
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: transform var(--trans-mid), border-radius var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
+  z-index:2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+/* icon visuals — stroke inherits from color var */
+.dot svg{ width:18px; height:18px; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke: var(--stroke, rgba(0,0,0,0.78)); z-index:5; transition: transform var(--trans-fast), stroke var(--trans-fast); }
+
+/* label sits inside the expanded area — positioned relative to item */
+.label{
+  position:absolute;
+  left: calc(var(--btn-d) + 12px);
+  top:50%;
+  transform: translateY(-50%) translateX(-8px);
+  font-family: var(--label-font);
+  font-weight:500;
+  font-size:0.95rem;
+  color: var(--label-color);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.9,.25,1);
+  z-index:5;
+  white-space:nowrap;
+}
+
+/* small ripple behind dot (on button) */
+.nav-btn::after{
+  content:"";
+  position:absolute;
+  left: calc(var(--btn-d) / 2);
+  top:50%;
+  width:56px; height:56px; border-radius:999px;
+  transform: translate(-50%,-50%) scale(.6);
+  background: radial-gradient(circle, var(--splash) 0%, rgba(255,255,255,0.02) 45%, transparent 60%);
+  opacity:0; pointer-events:none; z-index:1;
+  transition: opacity 160ms;
+}
+
+/* HOVER/FOCUS: expand the colored layer smoothly (scaleX) and show label; icon pulses */
+.nav-item:hover .nav-btn,
+.nav-item:focus-within .nav-btn{
+  transform: translateX(6px) scale(1.02);
+}
+.nav-item:hover .dot::before,
+.nav-item:focus-within .dot::before{
+  transform: scaleX(calc(var(--expanded-w) / var(--btn-d)));
+  border-radius: var(--pill-radius);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+}
+.nav-item:hover .label,
+.nav-item:focus-within .label{
+  opacity:1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events:auto;
+}
+/* icon micro-pulse */
+.nav-item:hover .dot svg,
+.nav-item:focus-within .dot svg{
+  transform: scale(1.06);
+}
+/* ripple anim */
+.nav-item:hover .nav-btn::after,
+.nav-item:focus-within .nav-btn::after{
+  animation: ripple 620ms cubic-bezier(.22,.9,.3,1);
+  opacity:1;
+}
+@keyframes ripple{
+  0%{ transform: translate(-50%,-50%) scale(.6); opacity:.36; }
+  60%{ transform: translate(-50%,-50%) scale(1.6); opacity:.08; }
+  100%{ transform: translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+
+/* pastel theming per item — tint and stroke color */
+.nav-item:nth-child(1){ --tint: rgba(246,221,226,0.86); --stroke:#C97A8A; }
+.nav-item:nth-child(2){ --tint: rgba(221,235,255,0.86); --stroke:#6FA0D6; }
+.nav-item:nth-child(3){ --tint: rgba(255,245,224,0.86); --stroke:#D1B26A; }
+.nav-item:nth-child(4){ --tint: rgba(224,250,236,0.86); --stroke:#66B886; }
+.nav-item:nth-child(5){ --tint: rgba(255,240,232,0.86); --stroke:#E0A47A; }
+.nav-item:nth-child(6){ --tint: rgba(240,234,255,0.86); --stroke:#8B6FAF; }
+
+/* focus ring accessible */
+.nav-btn:focus{ outline: none; box-shadow: 0 0 0 6px rgba(202,150,92,0.06); }
+
+/* active (visual) bump */
+.nav-btn[aria-current="true"] .dot::before{
+  box-shadow: 0 16px 42px rgba(0,0,0,0.08);
+}
+
+/* mobile: hide labels to keep compact */
+@media (max-width:520px){
+  .label{ display:none; }
+  :root{ --btn-d:46px; --expanded-w:160px; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .dot::before, .label, .nav-btn::after, .nav-btn, .dot svg { transition: none !important; animation:none !important; transform:none !important; }
+}
+
+
+</style>
+
+
+  <aside class="glass-nav" aria-label="Barra lateral">
+    <nav aria-label="Navegação principal">
+      <ul>
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:home' %}" aria-label="Inicio">
+              <span class="dot" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L12 4 L21 11.5"></path><rect x="6" y="11.5" width="12" height="8" rx="1.2"></rect></svg>
+              </span>
+              <span class="label">Início</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:profile' %}" aria-label="Perfil">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8.5" r="3"></circle>
+                <path d="M5.5 20.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path>
+              </svg>
+            </span>
+            <span class="label">Perfil</span>
+          </a>
+       </li>
+
+        <li class="nav-item">
+          <a class="nav-btn" href="{% url 'chat:chat' %}" aria-label="Perfil">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14a1 1 0 0 1-1 1H8l-4 4V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1z"></path><path d="M7.5 10h9"></path></svg>
+            </span>
+            <span class="label">Chat</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Salas">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="9.2" r="2"></circle><circle cx="15.5" cy="9.2" r="2"></circle><path d="M4.5 19.5c1.6-3 4.4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"></path></svg>
+            </span>
+            <span class="label">Salas</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Explorar">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M9.2 9.2 L14 10.5 L12.5 15.2 Z"></path></svg>
+            </span>
+            <span class="label">Explorar</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-btn" aria-label="Inventário">
+            <span class="dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.2" y="7" width="11.6" height="12" rx="1.4"></rect><path d="M9 7v-1a3 3 0 0 1 6 0v1"></path><path d="M9.5 13.5h5"></path></svg>
+            </span>
+            <span class="label">Inventário</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+
+
+  <main>
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+<form id="match-form" class="match-form">
+  <h2>🔎 Procurar Parceiro</h2>
+  <p class="subtitle">Escolha como quer encontrar alguém:</p>
+
+  <label class="checkbox">
+    <input type="checkbox" name="use_location" id="use_location">
+    <span>Usar localização</span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="use_interests" id="use_interests">
+    <span>Usar gostos do meu perfil</span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="use_temp_interests" id="use_temp_interests">
+    <span>Usar gostos temporários</span>
+  </label>
+
+  <div id="temp-interests-container" class="temp-input">
+    <input type="text" id="temp_interests" placeholder="Digite gostos separados por vírgula">
+  </div>
+
+  <button type="submit" id="btn-search" class="btn-search">✨ Procurar Parceiro</button>
+</form>
+
+<style>
+.match-form {
+  max-width: 380px;
+  margin: 2rem auto;
+  padding: 1.6rem;
+  background: rgba(240, 235, 250, 0.65);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+}
+
+.match-form h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #3a2f4d;
+}
+
+.match-form .subtitle {
+  font-size: 0.9rem;
+  color: #6b607d;
+  margin-bottom: 1.2rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  color: #42385a;
+}
+
+.checkbox input {
+  accent-color: #7a5cf3;
+  margin-right: 0.6rem;
+}
+
+.temp-input {
+  display: none;
+  margin-top: 0.8rem;
+}
+
+.temp-input input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #c9bedf;
+  font-size: 0.95rem;
+  background: #fff;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.btn-search {
+  margin-top: 1.4rem;
+  width: 100%;
+  padding: 12px 0;
+  background: linear-gradient(135deg, #8a6dfc, #6c50d6);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.btn-search:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(90, 70, 180, 0.3);
+}
+</style>
+
+<script>
+  // Mostrar/ocultar campo gostos temporários
+  document.getElementById('use_temp_interests').addEventListener('change', function() {
+    document.getElementById('temp-interests-container').style.display = this.checked ? 'block' : 'none';
+  });
+</script>
+
+
+
+<!-- --- GOOSEDESKTOP.EXE melhorado com interações fun --- -->
+<style>
+  .pet-layer { position: fixed; right: 24px; bottom: 24px; z-index: 9999; pointer-events: none; }
+  .pet {
+    pointer-events: auto;
+    width: 120px;
+    height: 120px;
+    touch-action: none;
+    user-select: none;
+    display: inline-block;
+    transform-origin: center center;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    will-change: transform, left, top;
+    cursor: grab;
+  }
+  .pet:active { cursor: grabbing; }
+  
+  .pet-frame {
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08));
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(6px) saturate(140%);
+    box-shadow: 0 8px 26px rgba(18,14,30,0.18);
+    pointer-events: none;
+  }
+  
+  .goose-svg { width: 100%; height: 100%; display:block; }
+  .goose-eye { transform-origin: 55% 30%; animation: blink 6s infinite; }
+  @keyframes blink { 0%,94% { transform: scaleY(1); } 96% { transform: scaleY(0.12); } 100% { transform: scaleY(1); } }
+
+  /* Fun Animations */
+  @keyframes roll {
+    0% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(15deg) translateY(-8px); }
+    50% { transform: rotate(0deg) translateY(0); }
+    75% { transform: rotate(-15deg) translateY(-8px); }
+    100% { transform: rotate(0deg) translateY(0); }
+  }
+  @keyframes hop {
+    0% { transform: translateY(0) scale(1); }
+    20% { transform: translateY(-12px) scale(1.05); }
+    40% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes dance {
+    0% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(6px) rotate(3deg); }
+    50% { transform: translateX(-6px) rotate(-3deg); }
+    75% { transform: translateX(6px) rotate(3deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+
+  .pet.roll { animation: roll 1s ease-in-out; }
+  .pet.hop { animation: hop 0.8s ease-out; }
+  .pet.spin { animation: spin 1.2s ease-in-out; }
+  .pet.dance { animation: dance 1.5s ease-in-out infinite; }
+
+  .pet.happy { animation: happy-bounce 800ms ease-in-out 1; transform: translateY(-6px) scale(1.02); }
+  @keyframes happy-bounce { 0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)} }
+
+  .pet.walk { animation: walk-rock 600ms ease-in-out infinite; }
+  @keyframes walk-rock { 0%{ transform: rotate(-2deg)}50%{transform: rotate(2deg)}100%{transform: rotate(-2deg)} }
+
+  .pet-controls {
+    position: absolute;
+    right: 100%;
+    bottom: 0;
+    margin-right: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    pointer-events: auto;
+  }
+  .pet-btn {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 8px;
+    border-radius: 10px;
+    color: #2c2337;
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s;
+    backdrop-filter: blur(4px);
+  }
+  .pet-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.22); }
+
+  .pet-mood {
+    position: absolute;
+    left: 50%;
+    top: -18px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+  }
+  .pet-mood .heart { font-size: 12px; opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; }
+  .pet-mood.show .heart { opacity: 1; transform: translateY(0); }
+
+  .pet:focus { outline: 3px solid rgba(120,80,200,0.16); outline-offset: 6px; border-radius: 18px; }
+
+  @media (max-width:520px) {
+    .pet { width: 88px; height: 88px; }
+  }
+</style>
+
+  <div id="cursor"></div>
+
+<div id="pet-root" class="pet-layer" aria-hidden="false">
+  <div id="pet-el" class="pet" role="button" tabindex="0" aria-label="Bichinho GooseDesktop. Pressione Enter para interagir.">
+    <div class="pet-frame"></div>
+    <div id="pet-mood" class="pet-mood" aria-hidden="true">
+      <div class="heart">💜</div>
+      <div class="heart">💛</div>
+      <div class="heart">💙</div>
+    </div>
+    <svg class="goose-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="100" cy="110" rx="58" ry="44" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <path d="M70 110 q30 -30 60 0 q-30 20 -60 0" fill="#fff7e8" stroke="#e9d8c6" stroke-width="1.6"/>
+      <path d="M120 70 q-10 -24 -24 -18 q-12 6 -8 24 q6 28 12 34" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <circle cx="106" cy="58" r="16" fill="#fffef6" stroke="#e9d8c6" stroke-width="2"/>
+      <path d="M118 58 l18 6 l-18 6 z" fill="#ffd28a" stroke="#e6b56e" stroke-width="1.2"/>
+      <ellipse class="goose-eye" cx="100" cy="54" rx="3.6" ry="3.6" fill="#2b2130"/>
+      <path d="M86 150 l6 10 m12 -10 l6 10" stroke="#e6b56e" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="60" cy="40" r="4" fill="#fff6e8" opacity="0.9" />
+    </svg>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pet = document.getElementById('pet-el');
+  const petRoot = document.getElementById('pet-root');
+  const mood = document.getElementById('pet-mood');
+  let dragging = false;
+  let offset = {x:0,y:0};
+  let state = {
+    x: null, y: null, follow:false, mood: 2
+  };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('goose_desktop_state') || 'null');
+    if (saved) Object.assign(state, saved);
+  } catch(e){}
+
+  function applyPosition() {
+    if (state.x === null || state.y === null) {
+      state.x = window.innerWidth - 160;
+      state.y = window.innerHeight - 160;
+    }
+    pet.style.position = 'fixed';
+    pet.style.left = Math.max(8, Math.min(state.x, window.innerWidth - pet.offsetWidth - 8)) + 'px';
+    pet.style.top  = Math.max(8, Math.min(state.y, window.innerHeight - pet.offsetHeight - 8)) + 'px';
+  }
+  applyPosition();
+
+  function saveState() {
+    try { localStorage.setItem('goose_desktop_state', JSON.stringify(state)); } catch(e){}
+  }
+
+  let wanderTimer = null;
+  function startWander(){
+    if (state.follow) return;
+    stopWander();
+    wanderTimer = setTimeout(() => {
+      const margin = 60;
+      const maxX = window.innerWidth - pet.offsetWidth - margin;
+      const maxY = window.innerHeight - pet.offsetHeight - margin;
+      const nx = Math.floor(Math.random() * (maxX - margin)) + margin;
+      const ny = Math.floor(Math.random() * (maxY - margin)) + margin;
+      moveTo(nx, ny, 800 + Math.random()*1200);
+      startWander();
+    }, 2000 + Math.random()*4000);
+  }
+  function stopWander(){ if (wanderTimer) { clearTimeout(wanderTimer); wanderTimer = null; } }
+
+  let moveTween = null;
+  function moveTo(nx, ny, duration=800) {
+    if (moveTween) cancelAnimationFrame(moveTween.id);
+    const startX = parseFloat(pet.style.left);
+    const startY = parseFloat(pet.style.top);
+    const dx = nx - startX;
+    const dy = ny - startY;
+    const start = performance.now();
+    pet.classList.add('walk');
+    moveTween = { id: null };
+    function step(now){
+      const t = Math.min(1, (now - start) / duration);
+      const ease = t*(2 - t);
+      pet.style.left = (startX + dx*ease) + 'px';
+      pet.style.top  = (startY + dy*ease) + 'px';
+      if (t < 1) moveTween.id = requestAnimationFrame(step);
+      else { pet.classList.remove('walk'); state.x = nx; state.y = ny; saveState(); }
+    }
+    moveTween.id = requestAnimationFrame(step);
+  }
+
+  function playRandomFunInteraction() {
+    // escolhe uma animação divertida ao acaso
+    const fun = ['roll', 'hop', 'spin', 'dance'];
+    const pick = fun[Math.floor(Math.random()*fun.length)];
+    pet.classList.add(pick);
+    setTimeout(()=>{ pet.classList.remove(pick); }, 1500);
+  }
+
+  function honkSound() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      const now = ctx.currentTime;
+      o.frequency.setValueAtTime(220, now);
+      o.frequency.linearRampToValueAtTime(720, now + 0.15);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(now); o.stop(now + 0.32);
+    } catch(e){}
+  }
+
+  function showMoodBurst() {
+    mood.classList.add('show');
+    pet.classList.add('happy');
+    setTimeout(()=>{ mood.classList.remove('show'); }, 1200);
+    setTimeout(()=>{ pet.classList.remove('happy'); }, 900);
+  }
+
+  function createMenu() {
+    const controls = document.createElement('div');
+    controls.className = 'pet-controls';
+    controls.innerHTML = `
+      <button class="pet-btn" data-act="follow">${state.follow ? 'Seguir ✓' : 'Seguir'}</button>
+      <button class="pet-btn" data-act="pet">Acariciar</button>
+      <button class="pet-btn" data-act="feed">Alimentar</button>
+      <button class="pet-btn" data-act="fun">Interagir</button>
+    `;
+    pet.appendChild(controls);
+
+    controls.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.pet-btn');
+      if(!btn) return;
+      const act = btn.dataset.act;
+      if(act === 'follow'){
+        state.follow = !state.follow;
+        btn.textContent = state.follow ? 'Seguir ✓' : 'Seguir';
+        if(state.follow) stopWander(); else startWander();
+        saveState();
+      } else if(act === 'pet'){
+        honkSound(); showMoodBurst();
+      } else if(act === 'feed'){
+        honkSound(); showMoodBurst();
+        state.mood = Math.min(5, (state.mood||2) + 1);
+        saveState();
+      } else if(act === 'fun'){
+        playRandomFunInteraction();
+      }
+    });
+  }
+  createMenu();
+
+  pet.addEventListener('click', (e)=>{
+    honkSound();
+    showMoodBurst();
+  });
+  pet.addEventListener('dblclick', (e)=>{
+    // duplo clique => interação fun
+    playRandomFunInteraction();
+  });
+
+  pet.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      honkSound(); showMoodBurst();
+    }
+    if (e.key === 'F') { // tecla F => interação fun
+      e.preventDefault();
+      playRandomFunInteraction();
+    }
+  });
+
+  pet.addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    dragging = true;
+    pet.setPointerCapture(e.pointerId);
+    offset.x = e.clientX - pet.getBoundingClientRect().left;
+    offset.y = e.clientY - pet.getBoundingClientRect().top;
+    pet.style.transition = 'none';
+    stopWander();
+  });
+
+  pet.addEventListener('pointermove', (e)=>{
+    if (!dragging) return;
+    const nx = e.clientX - offset.x;
+    const ny = e.clientY - offset.y;
+    pet.style.left = Math.max(6, Math.min(nx, window.innerWidth - pet.offsetWidth - 6)) + 'px';
+    pet.style.top  = Math.max(6, Math.min(ny, window.innerHeight - pet.offsetHeight - 6)) + 'px';
+  });
+
+  pet.addEventListener('pointerup', (e)=>{
+    if (!dragging) return;
+    dragging = false;
+    pet.releasePointerCapture(e.pointerId);
+    pet.style.transition = '';
+    state.x = parseFloat(pet.style.left);
+    state.y = parseFloat(pet.style.top);
+    saveState();
+    if (!state.follow) startWander();
+  });
+
+  let followHandler = null;
+  function enableFollow() {
+    if (followHandler) return;
+    followHandler = function(e){
+      const nx = Math.max(8, Math.min(e.clientX + 18, window.innerWidth - pet.offsetWidth - 8));
+      const ny = Math.max(8, Math.min(e.clientY + 18, window.innerHeight - pet.offsetHeight - 8));
+      moveTo(nx, ny, 220);
+    };
+    window.addEventListener('mousemove', followHandler);
+  }
+  function disableFollow() {
+    if (!followHandler) return;
+    window.removeEventListener('mousemove', followHandler);
+    followHandler = null;
+  }
+
+  function refreshFollow() {
+    if (state.follow) enableFollow(); else disableFollow();
+  }
+  refreshFollow();
+
+  window.addEventListener('resize', ()=> {
+    applyPosition();
+  });
+
+  // inicia wander e pequenas interações automáticas
+  startWander();
+  setTimeout(()=>{ pet.classList.add('happy'); setTimeout(()=>pet.classList.remove('happy'), 700); }, 600);
+
+  // de vez em quando faz algo engraçado automaticamente
+  setInterval(() => {
+    // a cada 20~40 segundos, se não estiver sendo arrastado ou seguindo
+    if (!dragging && !state.follow) {
+      playRandomFunInteraction();
+    }
+  }, 20000 + Math.random()*20000);
+
+  window.gooseDesktop = {
+    petEl: pet,
+    honk: honkSound,
+    fun: playRandomFunInteraction,
+    setFollow: (v)=> { state.follow = !!v; refreshFollow(); saveState(); }
+  };
+})();
+</script>
+
+
+
+<script>
+const cursor = document.getElementById('cursor');
+
+// Segue o mouse
+document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+
+// Muda cursor
+function setPointerCursor() {
+    cursor.style.backgroundImage = "url('/static/images/pointer.png')";
+}
+
+function setNormalCursor() {
+    cursor.style.backgroundImage = "url('/static/images/cursor.png')";
+}
+
+// Aplica aos elementos clicáveis
+document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', setPointerCursor);
+    el.addEventListener('mouseleave', setNormalCursor);
+});
+</script>
+
+
+<script>
+  const form = document.getElementById('match-form');
+  const btnSearch = document.getElementById('btn-search');
+  let polling = false;
+  let pollTimeout;
+
+  // Mostrar/ocultar campo gostos temporários
+  document.getElementById('use_temp_interests').addEventListener('change', function() {
+    document.getElementById('temp-interests-container').style.display = this.checked ? 'block' : 'none';
+  });
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (!polling) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  });
+
+  function startPolling() {
+    polling = true;
+    btnSearch.textContent = 'Parar de Procurar';
+    tryFindMatch();
+  }
+
+  function stopPolling() {
+    polling = false;
+    btnSearch.textContent = 'Procurar Parceiro';
+    if (pollTimeout) clearTimeout(pollTimeout);
+  }
+
+  async function tryFindMatch() {
+    if (!polling) return;
+
+    const use_location = document.getElementById('use_location').checked;
+    const use_interests = document.getElementById('use_interests').checked;
+    const use_temp_interests = document.getElementById('use_temp_interests').checked;
+    const temp_interests_raw = document.getElementById('temp_interests').value;
+
+    try {
+      const response = await fetch("{% url 'chat:find_match' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          use_location,
+          use_interests,
+          use_temp_interests,
+          temp_interests_raw
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.room_id) {
+        window.location.href = "/chat/" + data.room_id + "/";
+        return;
+      } else {
+        let delay = 3000;
+        if (use_interests || use_temp_interests) delay = 5000;
+        pollTimeout = setTimeout(tryFindMatch, delay);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar parceiro:', err);
+      pollTimeout = setTimeout(tryFindMatch, 5000);
+    }
+  }
+</script>
