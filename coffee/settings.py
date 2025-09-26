@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ------------------------------
 # Segurança
 # ------------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-secret-for-dev")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure--gsjmiv)$p8v@x3_i$h=d89q5e7)7yg0qya9jn==#8(aj48u*s")
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")  # separar por vírgula
 
 # ------------------------------
@@ -67,7 +67,6 @@ TEMPLATES = [
 # ------------------------------
 ASGI_APPLICATION = "coffee.asgi.application"
 
-# Use Redis em produção
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -80,17 +79,12 @@ CHANNEL_LAYERS = {
 # ------------------------------
 # Banco de dados
 # ------------------------------
-# Para SQLite (não recomendado em produção)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Caso queira usar PostgreSQL do Render
-# import dj_database_url
-# DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 
 # ------------------------------
 # Senhas
@@ -130,8 +124,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "deployzzy@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "bcge xzwv bcou fsfj")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ------------------------------
