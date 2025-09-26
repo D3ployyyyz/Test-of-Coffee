@@ -14,10 +14,12 @@ cryptography==45.0.4
 daphne==4.2.0
 dj-database-url==3.0.1
 Django==5.2.3
+gunicorn==23.0.0
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
 msgpack==1.1.1
+packaging==25.0
 pillow==11.3.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
